@@ -1,0 +1,52 @@
+# Comprime y redimensiona fotos en assets/productos tras cada push.
+# Si ya estan optimizadas, el job no hace commit (evita bucles sin [skip ci] en Netlify).
+name: Optimizar imagenes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "assets/productos/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: optimize-images-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    # No volver a optimizar el commit automatico del bot (ahorra minutos y evita bucles raros)
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore: optimizar imagenes de productos') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Optimizar imagenes
+        run: npm run optimize-images
+
+      - name: Commit si hay cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/productos
+          if git diff --staged --quiet; then
+            echo "Sin cambios tras optimizar."
+            exit 0
+          fi
+          git commit -m "chore: optimizar imagenes de productos"
+          git push
