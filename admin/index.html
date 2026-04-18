@@ -6,6 +6,27 @@
     <title>Admin · 90 Minutos Sports</title>
   </head>
   <body>
+    <!--
+      URL del endpoint Identity de ESTE sitio (obligatorio si Decap arma mal el auth de GitHub).
+      Si cambias de dominio, actualiza esta URL.
+      Opcional: en el <script> de identity añade data-netlify-identity-site-id="UUID"
+      (Site configuration → Site details → Site ID en Netlify).
+    -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script>
+      (function () {
+        var identityApiUrl = "https://90minutossports.netlify.app/.netlify/identity";
+        if (!window.netlifyIdentity) return;
+        window.netlifyIdentity.init({ APIUrl: identityApiUrl });
+        window.netlifyIdentity.on("init", function (user) {
+          if (!user) {
+            window.netlifyIdentity.on("login", function () {
+              document.location.href = "/admin/";
+            });
+          }
+        });
+      })();
+    </script>
     <script src="https://unpkg.com/decap-cms@^3.3.3/dist/decap-cms.js"></script>
   </body>
 </html>

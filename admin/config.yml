@@ -1,6 +1,5 @@
 backend:
-  name: github
-  repo: MariandreaDelBoccio/90minutos
+  name: git-gateway
   branch: main
 
 locale: es
