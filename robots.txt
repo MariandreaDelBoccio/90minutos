@@ -1,5 +1,5 @@
-# Reemplaza el dominio del Sitemap si publicas en otra URL
+# Pre-lanzamiento: bloquea el rastreo. Antes del lanzamiento público, restaura Allow: / y el Sitemap.
 User-agent: *
-Allow: /
+Disallow: /
 
-Sitemap: https://90minutossports.es/sitemap.xml
+# Sitemap: https://90minutossports.es/sitemap.xml
