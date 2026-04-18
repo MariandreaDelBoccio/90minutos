@@ -150,7 +150,6 @@ function buildShowcaseHTML(items) {
           <div class="home-showcase__canvas">${imgs}</div>
         </div>
         <div class="home-showcase__dots" role="group" aria-label="Piezas del once">${dots}</div>
-        <p class="home-showcase__hint muted small">La camisa fija cambia al centrar cada bloque (crossfade + escala).</p>
       </div>
       <div class="home-showcase__steps">${steps}</div>
     </div>`;
@@ -184,6 +183,7 @@ function initShowcaseScroll() {
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const mqNarrow = window.matchMedia("(max-width: 959px)");
 
   let active = -1;
 
@@ -197,10 +197,44 @@ function initShowcaseScroll() {
   }
 
   function setActive(i) {
-    if (i === active) return;
-    active = i;
-    imgs.forEach((img, j) => img.classList.toggle("is-active", j === i));
-    updateDots(i);
+    const idx = Math.max(0, Math.min(i, steps.length - 1));
+    if (idx === active) return;
+    active = idx;
+    imgs.forEach((img, j) => img.classList.toggle("is-active", j === idx));
+    updateDots(idx);
+  }
+
+  /** Una sola fuente de verdad: el bloque cuyo centro vertical está más cerca de la “línea de lectura” del viewport (corrige desajustes en mobile). */
+  /** Más bajo el factor → línea más arriba en la pantalla → cambio de foto un poco antes al hacer scroll. */
+  function readingLineY() {
+    const h = window.innerHeight;
+    if (mqNarrow.matches) {
+      return h * 0.61;
+    }
+    return h * 0.52;
+  }
+
+  function computeActiveIndex() {
+    const line = readingLineY();
+    let best = 0;
+    let bestDist = Infinity;
+    steps.forEach((step, i) => {
+      const r = step.getBoundingClientRect();
+      if (r.height <= 0) return;
+      const center = r.top + r.height / 2;
+      const d = Math.abs(center - line);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  function syncFromScroll() {
+    const mr = mount.getBoundingClientRect();
+    if (mr.bottom < 0 || mr.top > window.innerHeight) return;
+    setActive(computeActiveIndex());
   }
 
   dots.forEach((dot, i) => {
@@ -210,31 +244,33 @@ function initShowcaseScroll() {
   });
 
   if (!ScrollTrigger || reduce) {
-    const io = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          const i = Number(entry.target.getAttribute("data-showcase-step"));
-          if (!Number.isNaN(i)) setActive(i);
-        });
-      },
-      { threshold: 0.28, rootMargin: "-32% 0px -32% 0px" }
-    );
-    steps.forEach(s => io.observe(s));
-    setActive(0);
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncFromScroll();
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    onScroll();
     return;
   }
 
   gsap.registerPlugin(ScrollTrigger);
 
-  steps.forEach((step, i) => {
-    ScrollTrigger.create({
-      trigger: step,
-      start: "top 52%",
-      end: "bottom 48%",
-      onEnter: () => setActive(i),
-      onEnterBack: () => setActive(i),
-    });
+  const narrow = mqNarrow.matches;
+
+  ScrollTrigger.create({
+    trigger: mount,
+    start: "top bottom",
+    end: "bottom top",
+    onUpdate: self => {
+      if (!self.isActive) return;
+      syncFromScroll();
+    },
   });
 
   /** La vitrina entra en escena al acercarse al once */
@@ -242,7 +278,9 @@ function initShowcaseScroll() {
   if (canvasWrap) {
     gsap.fromTo(
       canvasWrap,
-      { y: 64, opacity: 0.45, scale: 0.94 },
+      narrow
+        ? { y: 28, opacity: 0.55, scale: 0.97 }
+        : { y: 64, opacity: 0.45, scale: 0.94 },
       {
         y: 0,
         opacity: 1,
@@ -250,20 +288,39 @@ function initShowcaseScroll() {
         ease: "none",
         scrollTrigger: {
           trigger: mount,
-          start: "top 92%",
-          end: "top 32%",
-          scrub: 0.7,
+          start: narrow ? "top 96%" : "top 92%",
+          end: narrow ? "top 58%" : "top 32%",
+          scrub: narrow ? 0.4 : 0.7,
         },
       }
     );
   }
 
   requestAnimationFrame(() => {
-    setActive(0);
-    ScrollTrigger.refresh();
+    requestAnimationFrame(() => {
+      syncFromScroll();
+      ScrollTrigger.refresh();
+    });
   });
 
+  let resizeT;
   window.addEventListener("load", () => ScrollTrigger.refresh());
+  window.addEventListener(
+    "resize",
+    () => {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(() => {
+        ScrollTrigger.refresh();
+        syncFromScroll();
+      }, 150);
+    },
+    { passive: true }
+  );
+
+  mqNarrow.addEventListener("change", () => {
+    ScrollTrigger.refresh();
+    syncFromScroll();
+  });
 }
 
 function initMidCtaScroll() {
