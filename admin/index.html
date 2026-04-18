@@ -4,8 +4,27 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Admin · 90 Minutos Sports</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="admin.css" />
+    <link rel="stylesheet" href="cms-shell.css" />
   </head>
   <body>
+    <div class="admin-welcome" id="admin-welcome">
+      <div class="admin-welcome__card">
+        <p class="admin-welcome__eyebrow">Panel de gestion</p>
+        <h1>90 Minutos Sports</h1>
+        <p class="admin-welcome__text">
+          Desde aqui puedes anadir, editar y publicar productos sin tocar codigo.
+        </p>
+        <ul class="admin-welcome__tips">
+          <li>Sube una imagen y completa nombre, precio y talla.</li>
+          <li>Guarda con el boton de publicar arriba a la derecha.</li>
+          <li>Cada cambio queda guardado en GitHub con historial.</li>
+        </ul>
+      </div>
+    </div>
     <!--
       URL del endpoint Identity de ESTE sitio (obligatorio si Decap arma mal el auth de GitHub).
       Si cambias de dominio, actualiza esta URL.
@@ -27,6 +46,35 @@
         });
       })();
     </script>
+    <div id="nc-root"></div>
     <script src="https://unpkg.com/decap-cms@^3.3.3/dist/decap-cms.js"></script>
+    <script>
+      (function () {
+        function registerPreviewStyles() {
+          var cms = window.CMS || window.DecapCms;
+          if (cms && typeof cms.registerPreviewStyle === "function") {
+            cms.registerPreviewStyle("/admin/preview.css");
+            return true;
+          }
+          return false;
+        }
+        if (!registerPreviewStyles()) {
+          setTimeout(registerPreviewStyles, 0);
+        }
+      })();
+    </script>
+    <script src="productos-preview.js"></script>
+    <script>
+      (function () {
+        var welcome = document.getElementById("admin-welcome");
+        var root = document.getElementById("nc-root");
+        if (!welcome || !root) return;
+        function syncWelcome() {
+          if (root.children.length > 0) welcome.classList.add("admin-welcome--hidden");
+        }
+        syncWelcome();
+        new MutationObserver(syncWelcome).observe(root, { childList: true });
+      })();
+    </script>
   </body>
 </html>

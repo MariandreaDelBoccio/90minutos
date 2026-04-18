@@ -3,12 +3,17 @@ backend:
   branch: main
 
 locale: es
+display_url: "https://90minutossports.netlify.app"
+
+editor:
+  preview: true
 media_folder: "assets/productos"
 public_folder: "/assets/productos"
 
 collections:
   - name: "catalogo"
     label: "Catalogo"
+    label_singular: "Producto"
     files:
       - file: "data/productos.json"
         name: "productos"
@@ -18,38 +23,60 @@ collections:
           - name: "productos"
             label: "Listado de productos"
             widget: "list"
+            label_singular: "Producto"
+            collapsed: true
+            add_to_top: true
             summary: "{{fields.team}} · {{fields.price}} USD"
+            hint: "Pulsa en un producto para editarlo o en 'Add Producto' para crear uno nuevo."
             fields:
-              - { name: "id", label: "ID", widget: "string", hint: "Ejemplo: rm-2425-home" }
-              - { name: "club", label: "Club", widget: "string" }
-              - { name: "team", label: "Nombre comercial", widget: "string" }
-              - { name: "season", label: "Temporada", widget: "string", default: "24/25" }
-              - { name: "league", label: "Liga", widget: "string", default: "LaLiga" }
-              - { name: "price", label: "Precio Fan (USD)", widget: "number", value_type: "float", min: 0, step: 0.01 }
-              - { name: "pricePlayer", label: "Precio Player (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, required: false }
-              - { name: "oldPrice", label: "Precio anterior (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, required: false }
+              - { name: "team", label: "Nombre del producto", widget: "string", hint: "Ejemplo: Real Madrid Home 24/25" }
+              - { name: "club", label: "Equipo o club", widget: "string", hint: "Ejemplo: Real Madrid" }
+              - { name: "id", label: "ID interno", widget: "string", hint: "Sin espacios. Ejemplo: rm-2425-home" }
+              - { name: "season", label: "Temporada", widget: "string", default: "24/25", hint: "Ejemplo: 24/25 o 2025" }
+              - name: "league"
+                label: "Liga o competicion"
+                widget: "select"
+                default: "LaLiga"
+                options:
+                  - "LaLiga"
+                  - "Premier League"
+                  - "Champions"
+                  - "Selección"
+                  - "Serie A"
+                  - "Bundesliga"
+                  - "Otra"
+              - { name: "price", label: "Precio version Fan (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, hint: "Precio base que vera el cliente." }
+              - { name: "pricePlayer", label: "Precio version Player (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, required: false, hint: "Si lo dejas vacio, la web calcula uno automaticamente." }
+              - { name: "oldPrice", label: "Precio anterior (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, required: false, hint: "Opcional. Sirve para mostrar oferta." }
               - name: "badge"
-                label: "Etiqueta"
+                label: "Etiqueta destacada"
                 widget: "select"
                 required: false
                 options: ["", "OFERTA", "NUEVO", "TOP"]
               - name: "sizes"
                 label: "Tallas disponibles"
-                widget: "list"
+                widget: "select"
+                multiple: true
                 default: ["S", "M", "L", "XL"]
-                field: { name: "size", label: "Talla", widget: "string" }
+                hint: "Elige una o varias tallas (Ctrl o Cmd para varias en escritorio)."
+                options: ["XS", "S", "M", "L", "XL", "XXL"]
               - name: "outOfStock"
                 label: "Tallas agotadas"
-                widget: "list"
+                widget: "select"
+                multiple: true
                 required: false
-                field: { name: "size", label: "Talla agotada", widget: "string" }
-              - { name: "image", label: "Imagen del producto", widget: "image", required: false, media_library: { config: { multiple: false } } }
-              - { name: "bg", label: "Fondo degradado (si no hay imagen)", widget: "string", required: false, default: "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)" }
+                hint: "Opcional. Elige las tallas sin stock."
+                options: ["XS", "S", "M", "L", "XL", "XXL"]
+              - { name: "image", label: "Imagen del producto", widget: "image", required: false, hint: "Recomendado. Si subes una imagen, la web la usa automaticamente.", media_library: { config: { multiple: false } } }
+              - { name: "bg", label: "Color o fondo de reserva", widget: "string", required: false, default: "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)", hint: "Solo se usa si no hay imagen." }
               - name: "players"
                 label: "Jugadores sugeridos"
                 widget: "list"
                 required: false
+                collapsed: true
+                summary: "{{fields.name}} #{{fields.number}}"
+                hint: "Opcional. Se mostraran como sugerencias en la web."
                 fields:
-                  - { name: "id", label: "ID interno", widget: "string" }
-                  - { name: "name", label: "Nombre", widget: "string" }
+                  - { name: "name", label: "Nombre del jugador", widget: "string" }
                   - { name: "number", label: "Dorsal", widget: "string", required: false }
+                  - { name: "id", label: "ID interno", widget: "string", hint: "Ejemplo: bellingham" }

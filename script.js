@@ -36,10 +36,23 @@ const DEFAULT_SHIRTS = [
 /** @type {typeof DEFAULT_SHIRTS} */
 let SHIRTS = [...DEFAULT_SHIRTS];
 
+/** Acepta ["S","M"] o formato Decap [{ size: "S" }, …]. */
+function normalizeSizeTokens(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return [];
+  return arr
+    .map((x) => {
+      if (typeof x === "string") return x;
+      if (x && typeof x === "object" && x.size != null) return String(x.size);
+      return "";
+    })
+    .filter(Boolean);
+}
+
 function normalizeShirt(raw, index) {
   const id = raw?.id != null ? String(raw.id) : String(index + 1);
-  const sizes = Array.isArray(raw?.sizes) && raw.sizes.length ? raw.sizes.map(String) : ["M", "L", "XL"];
-  const outOfStock = Array.isArray(raw?.outOfStock) ? raw.outOfStock.map(String) : [];
+  const sizesNorm = normalizeSizeTokens(raw?.sizes);
+  const sizes = sizesNorm.length ? sizesNorm : ["M", "L", "XL"];
+  const outOfStock = normalizeSizeTokens(raw?.outOfStock);
   const playersRaw = Array.isArray(raw?.players) ? raw.players : [];
   const players = pl(
     ...playersRaw

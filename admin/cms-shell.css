@@ -1,0 +1,58 @@
+/**
+ * Ajustes suaves del panel Decap (fuera del iframe de preview).
+ * Los selectores son genericos para no depender de clases hasheadas.
+ */
+
+#nc-root {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  --admin-accent: #8f2f3d;
+  --admin-accent-soft: rgba(143, 47, 61, 0.14);
+  --admin-radius: 12px;
+}
+
+/* Enlaces y acentos */
+#nc-root a {
+  color: var(--admin-accent);
+}
+
+#nc-root a:hover {
+  color: #a84352;
+}
+
+/* Campos de texto: bordes mas redondeados y foco de marca */
+#nc-root input:not([type="checkbox"]):not([type="radio"]),
+#nc-root select,
+#nc-root textarea {
+  border-radius: var(--admin-radius) !important;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#nc-root input:focus,
+#nc-root select:focus,
+#nc-root textarea:focus {
+  outline: none !important;
+  border-color: color-mix(in oklab, var(--admin-accent) 55%, #d4cdc2) !important;
+  box-shadow: 0 0 0 3px var(--admin-accent-soft) !important;
+}
+
+/* Botones primarios (heuristica por texto o rol) */
+#nc-root button[type="submit"],
+#nc-root [role="button"][class*="Button"] {
+  border-radius: 999px !important;
+}
+
+/* Separacion visual entre secciones del formulario */
+#nc-root fieldset {
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 16px 18px 18px;
+  margin-bottom: 16px;
+  background: color-mix(in oklab, #fff 88%, transparent);
+}
+
+/* Scroll mas limpio en columnas largas */
+#nc-root {
+  scrollbar-color: rgba(143, 47, 61, 0.35) transparent;
+}

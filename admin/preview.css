@@ -1,0 +1,365 @@
+/**
+ * Estilos del iframe de previsualizacion de Decap CMS.
+ * Se aplican al documento interno del panel Preview.
+ */
+
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  padding: 28px 24px 40px;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: #2a2622;
+  line-height: 1.55;
+  background:
+    radial-gradient(1200px 400px at 50% -10%, rgba(143, 47, 61, 0.12), transparent 55%),
+    radial-gradient(600px 300px at 0% 100%, rgba(34, 197, 94, 0.1), transparent 50%),
+    #f0ebe4;
+}
+
+/* Contenedor generico que suele usar el preview por defecto */
+body > *:first-child {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+  color: #161314;
+  margin: 0 0 12px;
+}
+
+h1 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+p {
+  margin: 0 0 12px;
+  color: #5e5850;
+  font-size: 15px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(212, 205, 194, 0.9);
+  box-shadow: 0 18px 40px -20px rgba(90, 28, 40, 0.35);
+  margin: 16px 0;
+}
+
+/* Listas de campos tipo clave/valor */
+dl {
+  margin: 0;
+  padding: 20px 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 205, 194, 0.95);
+  background: rgba(247, 244, 239, 0.92);
+  box-shadow: 0 12px 36px -18px rgba(0, 0, 0, 0.12);
+}
+
+dt {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #15803d;
+  margin-top: 14px;
+}
+
+dt:first-child {
+  margin-top: 0;
+}
+
+dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #2a2622;
+}
+
+/* Tablas si el preview las usa */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 12px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 205, 194, 0.95);
+  background: #fff;
+}
+
+th,
+td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(212, 205, 194, 0.6);
+}
+
+th {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5e5850;
+  background: rgba(229, 223, 214, 0.5);
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Bloques de codigo / JSON crudo */
+pre,
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+}
+
+pre {
+  margin: 16px 0;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #161314;
+  color: #ece8e6;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Tarjeta tipo producto (por si el preview renderiza divs planos) */
+.card-like {
+  border-radius: 18px;
+  border: 1px solid rgba(212, 205, 194, 0.95);
+  background: #f7f4ef;
+  padding: 20px;
+  box-shadow: 0 20px 50px -22px rgba(90, 28, 40, 0.35);
+}
+
+/* Vista previa personalizada (productos-preview.js) */
+.productos-preview {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.productos-preview--empty {
+  text-align: center;
+  padding: 32px 20px;
+  color: #5e5850;
+  font-size: 15px;
+}
+
+.productos-preview__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 205, 194, 0.95);
+  background: rgba(247, 244, 239, 0.95);
+}
+
+.productos-preview__label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #15803d;
+}
+
+.productos-preview__select {
+  flex: 1 1 200px;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 205, 194, 0.95);
+  background: #fff;
+  color: #2a2622;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.productos-preview__hint {
+  flex: 1 1 100%;
+  font-size: 12px;
+  color: #5e5850;
+}
+
+.productos-preview__card {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 205, 194, 0.95);
+  background: #f7f4ef;
+  box-shadow: 0 24px 55px -24px rgba(90, 28, 40, 0.4);
+}
+
+.productos-preview__visual {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: #e5dfd6;
+}
+
+.productos-preview__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.productos-preview__gradient {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+}
+
+.productos-preview__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background: #22c55e;
+  color: #04140a;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+}
+
+.productos-preview__body {
+  padding: 20px 22px 24px;
+}
+
+.productos-preview__title {
+  margin: 0 0 4px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  letter-spacing: 0.03em;
+  color: #161314;
+}
+
+.productos-preview__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0 10px;
+}
+
+.productos-preview__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.productos-preview__k {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5e5850;
+  flex-shrink: 0;
+}
+
+.productos-preview__v {
+  font-weight: 600;
+  color: #2a2622;
+  text-align: right;
+}
+
+.productos-preview__prices {
+  margin: 14px 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(229, 223, 214, 0.55);
+  border: 1px solid rgba(212, 205, 194, 0.8);
+}
+
+.productos-preview__old {
+  font-size: 13px;
+  color: #5e5850;
+  margin-bottom: 10px;
+}
+
+.productos-preview__strike {
+  text-decoration: line-through;
+}
+
+.productos-preview__price-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.productos-preview__price-line:first-of-type {
+  margin-top: 0;
+}
+
+.productos-preview__price {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.5rem;
+  color: #8f2f3d;
+}
+
+.productos-preview__sizes,
+.productos-preview__oos {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.productos-preview__v--warn {
+  color: #b91c1c !important;
+}
+
+.productos-preview__players {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(212, 205, 194, 0.9);
+}
+
+.productos-preview__players-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5e5850;
+  margin-bottom: 8px;
+}
+
+.productos-preview__player {
+  font-size: 14px;
+  color: #2a2622;
+  padding: 4px 0;
+}
