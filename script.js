@@ -14,13 +14,15 @@ let fxFetchFailed = false;
 let fxUpdateLabel = "";
 
 // ---------- Data ----------
+const PRODUCTS_URL = "data/productos.json";
+
 const P_NONE = { id: "none", name: "Sin personalizar", number: "" };
 const P_CUSTOM = { id: "custom", name: "Personalizado (nombre y dorsal)", number: "" };
 function pl(...stars) {
   return [P_NONE, P_CUSTOM, ...stars];
 }
 
-const SHIRTS = [
+const DEFAULT_SHIRTS = [
   { id: "1", club: "Real Madrid", team: "Real Madrid 24/25", season: "24/25", league: "LaLiga", price: 49.99, pricePlayer: 84.99, oldPrice: 65, badge: "OFERTA", sizes: ["S","M","L","XL","XXL"], outOfStock: ["S", "XXL"], players: pl({ id: "mbappe", name: "Mbappé", number: "9" }, { id: "vinicius", name: "Vinicius Jr.", number: "7" }, { id: "bellingham", name: "Bellingham", number: "5" }), bg: "linear-gradient(135deg,#0b1d4a,#1e3a8a 60%,#f5f5f5)" },
   { id: "2", club: "FC Barcelona", team: "FC Barcelona Away 24/25", season: "24/25", league: "LaLiga", price: 44.99, pricePlayer: 74.99, badge: "NUEVO", sizes: ["S","M","L","XL"], outOfStock: ["L"], players: pl({ id: "yamal", name: "Lamine Yamal", number: "10" }, { id: "lewandowski", name: "Lewandowski", number: "9" }), bg: "linear-gradient(135deg,#3b0764,#7c1d6f 50%,#f59e0b)" },
   { id: "3", club: "Manchester City", team: "Manchester City Home 24/25", season: "24/25", league: "Premier League", price: 52, pricePlayer: 86, sizes: ["M","L","XL","XXL"], players: pl({ id: "haaland", name: "Haaland", number: "9" }, { id: "debruyne", name: "De Bruyne", number: "17" }), bg: "linear-gradient(135deg,#0c4a6e,#0ea5e9 60%,#e0f2fe)" },
@@ -30,6 +32,56 @@ const SHIRTS = [
   { id: "7", club: "Liverpool", team: "Liverpool Home 24/25", season: "24/25", league: "Premier League", price: 49, pricePlayer: 79.99, sizes: ["M","L","XL"], players: pl({ id: "salah", name: "Salah", number: "11" }, { id: "van_dijk", name: "Van Dijk", number: "4" }), bg: "linear-gradient(135deg,#450a0a,#b91c1c 60%,#fef2f2)" },
   { id: "8", club: "Atlético Madrid", team: "Atlético Madrid 24/25", season: "24/25", league: "LaLiga", price: 46, pricePlayer: 76, badge: "NUEVO", sizes: ["S","M","L","XL"], players: pl({ id: "griezmann", name: "Griezmann", number: "7" }, { id: "alvarez", name: "Julián Álvarez", number: "19" }), bg: "linear-gradient(135deg,#7f1d1d,#fafafa 50%,#1e3a8a)" },
 ];
+
+/** @type {typeof DEFAULT_SHIRTS} */
+let SHIRTS = [...DEFAULT_SHIRTS];
+
+function normalizeShirt(raw, index) {
+  const id = raw?.id != null ? String(raw.id) : String(index + 1);
+  const sizes = Array.isArray(raw?.sizes) && raw.sizes.length ? raw.sizes.map(String) : ["M", "L", "XL"];
+  const outOfStock = Array.isArray(raw?.outOfStock) ? raw.outOfStock.map(String) : [];
+  const playersRaw = Array.isArray(raw?.players) ? raw.players : [];
+  const players = pl(
+    ...playersRaw
+      .map((p, i) => ({
+        id: p?.id != null ? String(p.id) : `player-${id}-${i + 1}`,
+        name: typeof p?.name === "string" ? p.name : "",
+        number: p?.number != null ? String(p.number) : "",
+      }))
+      .filter(p => p.name)
+  );
+  return {
+    id,
+    club: typeof raw?.club === "string" ? raw.club : "Club",
+    team: typeof raw?.team === "string" ? raw.team : `Camisa ${id}`,
+    season: typeof raw?.season === "string" ? raw.season : "24/25",
+    league: typeof raw?.league === "string" ? raw.league : "General",
+    price: Number(raw?.price) > 0 ? Number(raw.price) : 0,
+    pricePlayer: Number(raw?.pricePlayer) > 0 ? Number(raw.pricePlayer) : undefined,
+    oldPrice: Number(raw?.oldPrice) > 0 ? Number(raw.oldPrice) : undefined,
+    badge: typeof raw?.badge === "string" ? raw.badge : "",
+    sizes,
+    outOfStock,
+    players,
+    bg: typeof raw?.bg === "string" && raw.bg.trim()
+      ? raw.bg
+      : "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)",
+    image: typeof raw?.image === "string" ? raw.image : "",
+  };
+}
+
+async function loadShirts() {
+  try {
+    const res = await fetch(PRODUCTS_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error("http");
+    const payload = await res.json();
+    const list = Array.isArray(payload) ? payload : payload?.productos;
+    if (!Array.isArray(list) || list.length === 0) throw new Error("empty");
+    SHIRTS = list.map(normalizeShirt);
+  } catch (_) {
+    SHIRTS = [...DEFAULT_SHIRTS];
+  }
+}
 
 /** @type {Set<string>} */
 let favoriteIds = new Set();
@@ -331,7 +383,8 @@ function updateHeaderBadges() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShirts();
   loadFavorites();
   loadInquiry();
   updateHeaderBadges();
@@ -343,17 +396,23 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("90min-theme", next);
   });
 
+  function goToCatalogSection() {
+    const cat = document.getElementById("catalogo");
+    if (cat) cat.scrollIntoView({ behavior: "smooth" });
+    else window.location.href = "catalogo.html#catalogo";
+  }
+
   document.getElementById("btn-favorites")?.addEventListener("click", () => {
     if (favoriteIds.size === 0) {
       showToast("Aún no tienes favoritos. Pulsa el corazón en una camisa.");
-      document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" });
+      goToCatalogSection();
       return;
     }
     activeFilter = "FAVORITOS";
     buildFilters();
     buildCatalogRefine();
     renderGrid();
-    document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" });
+    goToCatalogSection();
   });
 
   document.getElementById("btn-inquiry")?.addEventListener("click", () => openInquiryDrawer());
@@ -415,9 +474,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   buildMarquee();
-  buildFilters();
-  buildCatalogRefine();
-  renderGrid();
+  if (document.getElementById("grid")) {
+    buildFilters();
+    buildCatalogRefine();
+    renderGrid();
+  }
   initParallax();
   initReveal();
   initModal();
@@ -433,12 +494,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ---------- Marquee ----------
 function buildMarquee() {
+  const track = document.getElementById("marquee");
+  if (!track) return;
   const items = ["LALIGA","PREMIER LEAGUE","CHAMPIONS","SERIE A","BUNDESLIGA","EUROCOPA","MUNDIAL","COPA AMÉRICA"];
   const trophy = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M17 4h3v3a4 4 0 0 1-4 4M7 4H4v3a4 4 0 0 0 4 4M17 4H7v6a5 5 0 0 0 10 0z"/></svg>`;
   const html = [...items, ...items, ...items]
     .map(t => `<div class="item"><span>${t}</span>${trophy}</div>`)
     .join("");
-  document.getElementById("marquee").innerHTML = html;
+  track.innerHTML = html;
 }
 
 // ---------- Filters ----------
@@ -481,6 +544,7 @@ function buildCatalogRefine() {
 
 function buildFilters() {
   const root = document.getElementById("filters");
+  if (!root) return;
   root.innerHTML = FILTERS.map(f =>
     `<button type="button" class="filter ${f.l === activeFilter ? "active" : ""}" data-f="${f.l}">${f.l}</button>`
   ).join("");
@@ -529,9 +593,11 @@ function updateCardPricing(card, shirt) {
 
 // ---------- Grid ----------
 function renderGrid() {
-  const list = getListForGrid();
-  document.getElementById("count").textContent = list.length;
   const grid = document.getElementById("grid");
+  if (!grid) return;
+  const list = getListForGrid();
+  const countEl = document.getElementById("count");
+  if (countEl) countEl.textContent = list.length;
   if (list.length === 0) {
     grid.innerHTML = `<p class="catalog-empty muted">No hay modelos en esta vista. Prueba otro filtro o guarda favoritos con el corazón.</p>`;
     return;
@@ -616,10 +682,13 @@ function cardHTML(s, i) {
   const fanPv = getFanPrice(s);
   const playersOpts = buildPlayerOptionsHTML(s, "none");
   const oldBlock = s.oldPrice ? `<div class="price-old js-price-old">${s.oldPrice.toFixed(2)} $</div>` : "";
+  const visual = s.image
+    ? `<img src="${encodeURI(s.image)}" alt="${s.team}" loading="lazy" />`
+    : `<div class="bg" style="background:${s.bg}"></div>`;
   return `
   <article class="card" data-id="${s.id}" data-edition="fan" data-player-id="none" style="--d:${(i % 4) * 0.08}s">
     <div class="img">
-      <div class="bg" style="background:${s.bg}"></div>
+      ${visual}
       <div class="water">${s.id}0</div>
       <div class="top">
         ${s.badge ? `<span class="badge-tag ${s.badge}">${s.badge}</span>` : `<span></span>`}
@@ -739,7 +808,11 @@ function closeProductModal(opts = {}) {
   productModalOpenId = null;
   if (defaultDocumentTitle) document.title = defaultDocumentTitle;
   if (!fromRoute && getProductIdFromHash()) {
-    location.hash = "#catalogo";
+    if (document.getElementById("catalogo")) {
+      location.hash = "#catalogo";
+    } else {
+      window.location.href = "catalogo.html#catalogo";
+    }
   }
 }
 
@@ -771,8 +844,11 @@ function openProductModal(id, opts = {}) {
   function renderModal() {
     const sizeBtns = buildSizeButtonsHTML(s, selected, "modal-size");
     const playerOpts = buildPlayerOptionsHTML(s, playerIdSel);
+    const modalVisual = s.image
+      ? `<div class="modal-visual"><img src="${encodeURI(s.image)}" alt="${s.team}" loading="lazy" /></div>`
+      : `<div class="modal-visual" style="background:${s.bg}"></div>`;
     body.innerHTML = `
-      <div class="modal-visual" style="background:${s.bg}"></div>
+      ${modalVisual}
       <div class="modal-info">
         <p class="modal-league">${s.league.toUpperCase()}</p>
         <h3 id="modal-title">${s.team}</h3>

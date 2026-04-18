@@ -1,0 +1,56 @@
+backend:
+  name: github
+  repo: MariandreaDelBoccio/90minutos
+  branch: main
+
+locale: es
+media_folder: "assets/productos"
+public_folder: "/assets/productos"
+
+collections:
+  - name: "catalogo"
+    label: "Catalogo"
+    files:
+      - file: "data/productos.json"
+        name: "productos"
+        label: "Productos"
+        format: "json"
+        fields:
+          - name: "productos"
+            label: "Listado de productos"
+            widget: "list"
+            summary: "{{fields.team}} · {{fields.price}} USD"
+            fields:
+              - { name: "id", label: "ID", widget: "string", hint: "Ejemplo: rm-2425-home" }
+              - { name: "club", label: "Club", widget: "string" }
+              - { name: "team", label: "Nombre comercial", widget: "string" }
+              - { name: "season", label: "Temporada", widget: "string", default: "24/25" }
+              - { name: "league", label: "Liga", widget: "string", default: "LaLiga" }
+              - { name: "price", label: "Precio Fan (USD)", widget: "number", value_type: "float", min: 0, step: 0.01 }
+              - { name: "pricePlayer", label: "Precio Player (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, required: false }
+              - { name: "oldPrice", label: "Precio anterior (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, required: false }
+              - name: "badge"
+                label: "Etiqueta"
+                widget: "select"
+                required: false
+                options: ["", "OFERTA", "NUEVO", "TOP"]
+              - name: "sizes"
+                label: "Tallas disponibles"
+                widget: "list"
+                default: ["S", "M", "L", "XL"]
+                field: { name: "size", label: "Talla", widget: "string" }
+              - name: "outOfStock"
+                label: "Tallas agotadas"
+                widget: "list"
+                required: false
+                field: { name: "size", label: "Talla agotada", widget: "string" }
+              - { name: "image", label: "Imagen del producto", widget: "image", required: false, media_library: { config: { multiple: false } } }
+              - { name: "bg", label: "Fondo degradado (si no hay imagen)", widget: "string", required: false, default: "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)" }
+              - name: "players"
+                label: "Jugadores sugeridos"
+                widget: "list"
+                required: false
+                fields:
+                  - { name: "id", label: "ID interno", widget: "string" }
+                  - { name: "name", label: "Nombre", widget: "string" }
+                  - { name: "number", label: "Dorsal", widget: "string", required: false }

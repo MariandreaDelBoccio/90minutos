@@ -4,35 +4,43 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>90 Minutos Sports — Camisas de fútbol premium</title>
-    <meta name="description" content="Las mejores camisas de fútbol al mejor precio. Calidad garantizada para los verdaderos fanáticos del balón." />
+    <meta name="description" content="Tienda especializada en camisas de fútbol: calidad premium, personalización y envío rápido. Descubre el once inicial y el catálogo completo." />
+    <link rel="canonical" href="index.html" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://ve.dolarapi.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" />
     <link rel="stylesheet" href="styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ClothingStore",
+        "name": "90 Minutos Sports",
+        "description": "Tienda online de camisas de fútbol de clubes y selecciones. Fan y Player, tallas S a XXL.",
+        "url": "./",
+        "areaServed": { "@type": "Country", "name": "España" }
+      }
+    </script>
   </head>
-  <body>
-    <!-- HEADER -->
+  <body class="page-home">
     <header class="site-header glass" id="top">
       <div class="container header-inner">
-        <a href="#top" class="logo">
+        <a href="index.html" class="logo">
           <span class="logo-90 text-gold-shimmer">90</span>
           <span class="logo-text">MINUTOS <span class="text-gold">SPORTS</span></span>
         </a>
         <nav class="nav">
-          <a href="#top">INICIO</a>
-          <a href="#catalogo">CAMISAS</a>
+          <a href="index.html#top">INICIO</a>
+          <a href="catalogo.html#catalogo">CAMISAS</a>
           <a href="#contacto">CONTACTO</a>
         </nav>
         <div class="header-actions">
-          <button type="button" id="btn-favorites" class="header-icon-btn" aria-label="Favoritos">
+          <a href="catalogo.html#catalogo" class="header-icon-btn header-icon-btn--link" aria-label="Ir al catálogo" title="Catálogo">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+          </a>
+          <a href="catalogo.html#catalogo" class="header-icon-btn header-icon-btn--link" aria-label="Abrir favoritos en el catálogo" title="Favoritos (en catálogo)" id="home-fav-shortcut">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <span class="header-badge" id="fav-count" hidden>0</span>
-          </button>
-          <button type="button" id="btn-inquiry" class="header-icon-btn" aria-label="Consulta a Instagram">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>
-            <span class="header-badge" id="inquiry-count" hidden>0</span>
-          </button>
+          </a>
         </div>
         <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar tema">
           <span class="thumb">
@@ -45,112 +53,107 @@
     </header>
 
     <main>
-      <!-- Primer viewport: cotización + hero + marquee (altura = 100svh − header) -->
-      <div class="above-fold">
-      <div class="fx-strip glass" id="fx-strip" aria-live="polite">
-        <div class="container fx-strip-inner">
-          <span class="fx-strip-title" title="Referencia orientativa en bolívares según cotización del mercado">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            USD → Bs. (ref.)
-          </span>
-          <span id="fx-rate-text" class="fx-strip-rate">Cargando cotización…</span>
-          <span id="fx-rate-updated" class="fx-strip-updated muted small"></span>
-          <a href="https://dolarapi.com/docs/venezuela/" class="fx-strip-link muted small" target="_blank" rel="noreferrer">DolarApi</a>
+      <div class="above-fold" id="hero">
+        <div class="fx-strip glass" id="fx-strip" aria-live="polite">
+          <div class="container fx-strip-inner">
+            <span class="fx-strip-title" title="Referencia orientativa en bolívares según cotización del mercado">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              USD → Bs. (ref.)
+            </span>
+            <span id="fx-rate-text" class="fx-strip-rate">Cargando cotización…</span>
+            <span id="fx-rate-updated" class="fx-strip-updated muted small"></span>
+            <a href="https://dolarapi.com/docs/venezuela/" class="fx-strip-link muted small" target="_blank" rel="noreferrer">DolarApi</a>
+          </div>
+        </div>
+
+        <div class="landing-stack">
+          <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-grid"></div>
+            <div class="hero-spot"></div>
+            <div class="hero-spot pitch"></div>
+            <div class="hero-90" data-parallax="0.3">90</div>
+            <div class="container hero-inner" data-parallax="0.15">
+              <div class="badge reveal">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 17l-6.3 4.4L8 14 2 9.4h7.6z"/></svg>
+                TEMPORADA 2024 — 2025
+              </div>
+              <h1 id="hero-title" class="hero-title">
+                <span class="reveal hero-line">TU CAMISA,</span>
+                <span class="reveal hero-line hero-line-nowrap" style="--d: 0.15s">TU <span class="text-gold-shimmer">PASIÓN</span></span>
+              </h1>
+              <p class="hero-sub reveal" style="--d: 0.3s">
+                Las mejores camisas de fútbol al mejor precio. Calidad premium garantizada para los verdaderos fanáticos del balón.
+              </p>
+              <div class="cta-row reveal" style="--d: 0.45s">
+                <a href="catalogo.html#catalogo" class="btn btn-primary">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+                  VER CATÁLOGO
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="arrow"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                </a>
+                <a href="#once-scrolly" class="btn btn-ghost">EL ONCE INICIAL</a>
+              </div>
+              <div class="stats reveal" style="--d: 0.6s">
+                <div><div class="n">8</div><div class="l">MODELOS</div></div>
+                <div><div class="n">5+</div><div class="l">LIGAS</div></div>
+                <div><div class="n">S-XXL</div><div class="l">TALLAS</div></div>
+                <div><div class="n">24H</div><div class="l">ENVÍO</div></div>
+              </div>
+            </div>
+          </section>
+
+          <div class="marquee">
+            <div class="marquee-track" id="marquee"></div>
+          </div>
         </div>
       </div>
 
-      <div class="landing-stack">
-      <section class="hero">
-        <div class="hero-grid"></div>
-        <div class="hero-spot"></div>
-        <div class="hero-spot pitch"></div>
-        <div class="hero-90" data-parallax="0.3">90</div>
-        <div class="container hero-inner" data-parallax="0.15">
-          <div class="badge reveal">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 17l-6.3 4.4L8 14 2 9.4h7.6z"/></svg>
-            TEMPORADA 2024 — 2025
-          </div>
-          <h1 class="hero-title">
-            <span class="reveal hero-line">TU CAMISA,</span>
-            <span class="reveal hero-line hero-line-nowrap" style="--d:.15s">TU <span class="text-gold-shimmer">PASIÓN</span></span>
-          </h1>
-          <p class="hero-sub reveal" style="--d:.3s">
-            Las mejores camisas de fútbol al mejor precio. Calidad premium garantizada
-            para los verdaderos fanáticos del balón.
+      <section class="home-showcase" id="once-scrolly" aria-labelledby="once-title">
+        <div class="container home-showcase__intro">
+          <p class="home-kicker">DESTACADOS</p>
+          <h2 id="once-title" class="home-section-title">EL <span class="text-gold-shimmer">ONCE INICIAL</span></h2>
+          <p class="home-section-sub muted">
+            Cuatro piezas que marcan el ritmo de la colección. Al hacer scroll, la camisa fija a la izquierda cambia con cada bloque (crossfade).
           </p>
-          <div class="cta-row reveal" style="--d:.45s">
-            <a href="#catalogo" class="btn btn-primary">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
-              VER CATÁLOGO
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="arrow"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </a>
-            <a href="#contacto" class="btn btn-ghost">CONTACTAR</a>
-          </div>
-          <div class="stats reveal" style="--d:.6s">
-            <div><div class="n">8</div><div class="l">MODELOS</div></div>
-            <div><div class="n">5+</div><div class="l">LIGAS</div></div>
-            <div><div class="n">S-XXL</div><div class="l">TALLAS</div></div>
-            <div><div class="n">24H</div><div class="l">ENVÍO</div></div>
-          </div>
+        </div>
+        <div id="home-lineup" class="home-showcase__mount" data-home-showcase></div>
+      </section>
+
+      <section class="home-mid-cta" aria-labelledby="mid-cta-title">
+        <div class="home-mid-cta__bg" aria-hidden="true"></div>
+        <div class="container home-mid-cta__inner">
+          <h2 id="mid-cta-title" class="home-mid-cta__title">TENEMOS TODA LA <span class="home-mid-cta__accent">COLECCIÓN.</span></h2>
+          <p class="home-mid-cta__text muted">Filtros por liga, rebajas y favoritos: todo en un solo lugar.</p>
+          <a href="catalogo.html#catalogo" class="btn btn-mid-cta">VER CATÁLOGO COMPLETO</a>
         </div>
       </section>
 
-      <div class="marquee">
-        <div class="marquee-track" id="marquee"></div>
-      </div>
-      </div>
-      </div>
-
-      <!-- CATALOG -->
-      <section class="container catalog" id="catalogo">
-        <div class="catalog-head reveal">
-          <div class="kicker pitch">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></svg>
-            FILTRAR POR LIGA
-          </div>
-          <h2>CATÁLOGO <span class="text-gold-shimmer">CAMISAS</span></h2>
-          <p class="muted">Temporada 2024 — 2025 · <span id="count">8</span> modelos</p>
+      <section class="home-about container" aria-labelledby="about-title">
+        <div class="home-about__intro home-reveal">
+          <h2 id="about-title">RECIÉN EMPEZAMOS. <span class="home-about__accent">PERO JUGAMOS EN SERIO.</span></h2>
+          <p class="muted">
+            Nacimos hace poco, pero trabajamos con proveedores exigentes y un criterio claro: materiales nobles, acabados limpios y una experiencia de compra sin humo.
+          </p>
         </div>
-        <div class="filters" id="filters"></div>
-        <div id="catalog-refine" class="catalog-refine" hidden>
-          <div class="refine-search-wrap">
-            <label class="visually-hidden" for="catalog-search">Buscar en el catálogo</label>
-            <input type="search" class="refine-search" id="catalog-search" placeholder="Buscar por equipo, temporada, liga…" autocomplete="off" />
-          </div>
-          <div class="refine-row">
-            <div class="refine-field">
-              <label for="subfilter-club">Equipo</label>
-              <select id="subfilter-club" class="refine-select"></select>
-            </div>
-            <div class="refine-field">
-              <label for="subfilter-season">Temporada</label>
-              <select id="subfilter-season" class="refine-select"></select>
-            </div>
-          </div>
-        </div>
-        <div class="grid" id="grid"></div>
-      </section>
-
-      <!-- FEATURES -->
-      <section class="features">
-        <div class="container features-grid">
-          <div class="feature reveal">
-            <div class="ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-            <div><h3>ENVÍO 24H</h3><p>Recibe tu camisa en menos de 24h en toda España.</p></div>
-          </div>
-          <div class="feature reveal" style="--d:.1s">
-            <div class="ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
-            <div><h3>CALIDAD GARANTIZADA</h3><p>Tela premium thermo-tech con licencia oficial.</p></div>
-          </div>
-          <div class="feature reveal" style="--d:.2s">
-            <div class="ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 2.4 7.4H22l-6 4.6 2.3 7.4L12 17l-6.3 4.4L8 14 2 9.4h7.6z"/></svg></div>
-            <div><h3>PERSONALIZACIÓN</h3><p>Añade tu nombre y dorsal favorito sin coste extra.</p></div>
-          </div>
+        <div class="home-about__grid">
+          <article class="home-pillar home-reveal">
+            <span class="home-pillar__n">01</span>
+            <h3>DISEÑO SUPERIOR</h3>
+            <p class="muted">Cortes actuales, detalles que se notan en vivo y una presentación que honra al club.</p>
+          </article>
+          <article class="home-pillar home-reveal">
+            <span class="home-pillar__n">02</span>
+            <h3>CALIDAD IMBATIBLE</h3>
+            <p class="muted">Tejidos pensados para el uso diario: transpirables, resistentes y con caída profesional.</p>
+          </article>
+          <article class="home-pillar home-reveal">
+            <span class="home-pillar__n">03</span>
+            <h3>PERSONALIZACIÓN</h3>
+            <p class="muted">Elige versión Fan o Player y, cuando aplique, tu dorsal favorito. Te guiamos por DM.</p>
+          </article>
         </div>
       </section>
 
-      <!-- CTA -->
-      <section class="cta" id="contacto">
+      <section class="cta home-cta" id="contacto">
         <div class="cta-bg"></div>
         <div class="container cta-inner reveal">
           <h2>¿QUIERES TU <span class="text-gold-shimmer">CAMISA?</span></h2>
@@ -169,53 +172,25 @@
       </section>
     </main>
 
-    <footer class="footer">
+    <footer class="footer home-footer">
       <div class="container footer-inner">
         <div class="logo">
           <span class="logo-90 text-gold-shimmer">90</span>
           <span class="logo-text">MINUTOS <span class="text-gold">SPORTS STORE</span></span>
         </div>
+        <div class="footer-links muted small">
+          <a href="catalogo.html">Catálogo</a>
+          <span aria-hidden="true">·</span>
+          <a href="index.html#contacto">Contacto</a>
+        </div>
         <div class="muted small">© 2026 · Hecho con pasión por el fútbol</div>
       </div>
     </footer>
 
-    <!-- Modal detalle producto -->
-    <div id="product-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
-      <div class="modal-backdrop" data-close-modal></div>
-      <div class="modal-panel">
-        <button type="button" class="modal-close" data-close-modal aria-label="Cerrar">&times;</button>
-        <div class="modal-body" id="modal-body"></div>
-      </div>
-    </div>
-
-    <!-- Panel consulta Instagram -->
-    <div id="inquiry-drawer" class="drawer" aria-hidden="true">
-      <div class="drawer-backdrop" data-close-drawer></div>
-      <aside class="drawer-panel" aria-labelledby="drawer-title">
-        <div class="drawer-head">
-          <h2 id="drawer-title">Tu consulta</h2>
-          <button type="button" class="drawer-close" data-close-drawer aria-label="Cerrar">&times;</button>
-        </div>
-        <p class="drawer-hint muted small">Añade modelos desde el catálogo y envía el mensaje completo al chat de Instagram de la marca.</p>
-        <ul class="inquiry-list" id="inquiry-list"></ul>
-        <div class="inquiry-preview-wrap">
-          <label for="inquiry-msg-preview" class="modal-label">Texto del mensaje</label>
-          <textarea id="inquiry-msg-preview" class="inquiry-preview" readonly rows="5" aria-label="Texto del mensaje para copiar"></textarea>
-          <p class="inquiry-preview-hint muted small">Si el botón no copia, selecciona el texto y usa «Copiar» del sistema (iPhone: mantener pulsado).</p>
-        </div>
-        <div class="drawer-actions">
-          <button type="button" class="btn btn-ghost btn-block" id="btn-copy-msg">Copiar mensaje</button>
-          <button type="button" class="btn btn-primary btn-block" id="btn-send-instagram">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>
-            Abrir Instagram y enviar
-          </button>
-        </div>
-      </aside>
-    </div>
-
-    <!-- Toast -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="script.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+    <script defer src="home.js"></script>
   </body>
 </html>

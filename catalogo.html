@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catálogo de camisas — 90 Minutos Sports</title>
+    <meta name="description" content="Explora el catálogo de camisas de fútbol: LaLiga, Premier, Champions y más. Filtra por liga, talla y versión Fan o Player." />
+    <link rel="canonical" href="catalogo.html" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://ve.dolarapi.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header glass" id="top">
+      <div class="container header-inner">
+        <a href="index.html" class="logo">
+          <span class="logo-90 text-gold-shimmer">90</span>
+          <span class="logo-text">MINUTOS <span class="text-gold">SPORTS</span></span>
+        </a>
+        <nav class="nav">
+          <a href="index.html">INICIO</a>
+          <a href="catalogo.html#catalogo">CAMISAS</a>
+          <a href="index.html#contacto">CONTACTO</a>
+        </nav>
+        <div class="header-actions">
+          <button type="button" id="btn-favorites" class="header-icon-btn" aria-label="Favoritos">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="header-badge" id="fav-count" hidden>0</span>
+          </button>
+          <button type="button" id="btn-inquiry" class="header-icon-btn" aria-label="Consulta a Instagram">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>
+            <span class="header-badge" id="inquiry-count" hidden>0</span>
+          </button>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar tema">
+          <span class="thumb">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </span>
+        </button>
+      </div>
+      <div class="header-line"></div>
+    </header>
+
+    <main>
+      <div class="fx-strip glass" id="fx-strip" aria-live="polite">
+        <div class="container fx-strip-inner">
+          <span class="fx-strip-title" title="Referencia orientativa en bolívares según cotización del mercado">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            USD → Bs. (ref.)
+          </span>
+          <span id="fx-rate-text" class="fx-strip-rate">Cargando cotización…</span>
+          <span id="fx-rate-updated" class="fx-strip-updated muted small"></span>
+          <a href="https://dolarapi.com/docs/venezuela/" class="fx-strip-link muted small" target="_blank" rel="noreferrer">DolarApi</a>
+        </div>
+      </div>
+
+      <section class="container catalog catalog-page-intro" id="catalogo">
+        <div class="catalog-head reveal">
+          <div class="kicker pitch">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></svg>
+            FILTRAR POR LIGA
+          </div>
+          <h1>CATÁLOGO <span class="text-gold-shimmer">CAMISAS</span></h1>
+          <p class="muted">Temporada 2024 — 2025 · <span id="count">0</span> modelos · <a href="index.html" class="catalog-back-home">Volver al inicio</a></p>
+        </div>
+        <div class="filters" id="filters"></div>
+        <div id="catalog-refine" class="catalog-refine" hidden>
+          <div class="refine-search-wrap">
+            <label class="visually-hidden" for="catalog-search">Buscar en el catálogo</label>
+            <input type="search" class="refine-search" id="catalog-search" placeholder="Buscar por equipo, temporada, liga…" autocomplete="off" />
+          </div>
+          <div class="refine-row">
+            <div class="refine-field">
+              <label for="subfilter-club">Equipo</label>
+              <select id="subfilter-club" class="refine-select"></select>
+            </div>
+            <div class="refine-field">
+              <label for="subfilter-season">Temporada</label>
+              <select id="subfilter-season" class="refine-select"></select>
+            </div>
+          </div>
+        </div>
+        <div class="grid" id="grid"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <a href="index.html" class="logo">
+          <span class="logo-90 text-gold-shimmer">90</span>
+          <span class="logo-text">MINUTOS <span class="text-gold">SPORTS STORE</span></span>
+        </a>
+        <div class="muted small">© 2026 · Hecho con pasión por el fútbol</div>
+      </div>
+    </footer>
+
+    <div id="product-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-panel">
+        <button type="button" class="modal-close" data-close-modal aria-label="Cerrar">&times;</button>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <div id="inquiry-drawer" class="drawer" aria-hidden="true">
+      <div class="drawer-backdrop" data-close-drawer></div>
+      <aside class="drawer-panel" aria-labelledby="drawer-title">
+        <div class="drawer-head">
+          <h2 id="drawer-title">Tu consulta</h2>
+          <button type="button" class="drawer-close" data-close-drawer aria-label="Cerrar">&times;</button>
+        </div>
+        <p class="drawer-hint muted small">Añade modelos desde el catálogo y envía el mensaje completo al chat de Instagram de la marca.</p>
+        <ul class="inquiry-list" id="inquiry-list"></ul>
+        <div class="inquiry-preview-wrap">
+          <label for="inquiry-msg-preview" class="modal-label">Texto del mensaje</label>
+          <textarea id="inquiry-msg-preview" class="inquiry-preview" readonly rows="5" aria-label="Texto del mensaje para copiar"></textarea>
+          <p class="inquiry-preview-hint muted small">Si el botón no copia, selecciona el texto y usa «Copiar» del sistema (iPhone: mantener pulsado).</p>
+        </div>
+        <div class="drawer-actions">
+          <button type="button" class="btn btn-ghost btn-block" id="btn-copy-msg">Copiar mensaje</button>
+          <button type="button" class="btn btn-primary btn-block" id="btn-send-instagram">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>
+            Abrir Instagram y enviar
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

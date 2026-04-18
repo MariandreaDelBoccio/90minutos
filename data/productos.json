@@ -1,23 +1,73 @@
 {
   "productos": [
     {
-      "oldPrice": 0,
+      "id": "rm-2425-home",
+      "club": "Real Madrid",
+      "team": "RM",
       "season": "25/26",
-      "badge": "NUEVO",
-      "bg": "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)",
+      "league": "LaLiga",
       "price": 200,
       "pricePlayer": 400,
+      "oldPrice": 0,
+      "badge": "NUEVO",
+      "sizes": ["S", "M", "L", "XL"],
+      "outOfStock": [],
+      "bg": "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)",
+      "image": "assets/productos/whatsapp-image-2026-04-17-at-00.06.26.jpeg",
+      "players": []
+    },
+    {
+      "id": "2",
+      "club": "FC Barcelona",
+      "team": "FC Barcelona Away 24/25",
+      "season": "24/25",
       "league": "LaLiga",
-      "sizes": [
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "club": "Real Madrid",
-      "id": "rm-2425-home",
-      "image": "/assets/productos/whatsapp-image-2026-04-17-at-00.06.26.jpeg",
-      "team": "RM"
+      "price": 44.99,
+      "pricePlayer": 74.99,
+      "badge": "NUEVO",
+      "sizes": ["S", "M", "L", "XL"],
+      "outOfStock": ["L"],
+      "bg": "linear-gradient(135deg,#3b0764,#7c1d6f 50%,#f59e0b)",
+      "image": "assets/productos/descarga (1).jpeg",
+      "players": [
+        { "id": "yamal", "name": "Lamine Yamal", "number": "10" },
+        { "id": "lewandowski", "name": "Lewandowski", "number": "9" }
+      ]
+    },
+    {
+      "id": "3",
+      "club": "Manchester City",
+      "team": "Manchester City Home 24/25",
+      "season": "24/25",
+      "league": "Premier League",
+      "price": 52,
+      "pricePlayer": 86,
+      "sizes": ["M", "L", "XL", "XXL"],
+      "outOfStock": [],
+      "bg": "linear-gradient(135deg,#0c4a6e,#0ea5e9 60%,#e0f2fe)",
+      "image": "assets/productos/descarga (2).jpeg",
+      "players": [
+        { "id": "haaland", "name": "Haaland", "number": "9" },
+        { "id": "debruyne", "name": "De Bruyne", "number": "17" }
+      ]
+    },
+    {
+      "id": "4",
+      "club": "Liverpool",
+      "team": "Liverpool Home 24/25",
+      "season": "24/25",
+      "league": "Premier League",
+      "price": 49,
+      "pricePlayer": 79.99,
+      "badge": "TOP",
+      "sizes": ["M", "L", "XL"],
+      "outOfStock": [],
+      "bg": "linear-gradient(135deg,#450a0a,#b91c1c 60%,#fef2f2)",
+      "image": "assets/productos/descarga (3).jpeg",
+      "players": [
+        { "id": "salah", "name": "Salah", "number": "11" },
+        { "id": "van_dijk", "name": "Van Dijk", "number": "4" }
+      ]
     }
   ]
 }
