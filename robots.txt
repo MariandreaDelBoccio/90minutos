@@ -1,0 +1,5 @@
+# Reemplaza el dominio del Sitemap si publicas en otra URL
+User-agent: *
+Allow: /
+
+Sitemap: https://90minutossports.es/sitemap.xml
