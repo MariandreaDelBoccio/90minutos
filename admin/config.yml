@@ -53,6 +53,7 @@ collections:
                 widget: "select"
                 required: false
                 options: ["", "OFERTA", "NUEVO", "TOP"]
+              - { name: "homeFeatured", label: "Mostrar en la home", widget: "boolean", default: false, required: false, hint: "Marca los productos que quieras enseñar en el bloque destacado de la portada." }
               - name: "sizes"
                 label: "Tallas disponibles"
                 widget: "select"

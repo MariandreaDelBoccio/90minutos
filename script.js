@@ -16,10 +16,9 @@ let fxUpdateLabel = "";
 // ---------- Data ----------
 const PRODUCTS_URL = "data/productos.json";
 
-const P_NONE = { id: "none", name: "Sin personalizar", number: "" };
-const P_CUSTOM = { id: "custom", name: "Personalizado (nombre y dorsal)", number: "" };
+const P_NONE = { id: "none", name: "Sin jugador", number: "" };
 function pl(...stars) {
-  return [P_NONE, P_CUSTOM, ...stars];
+  return [P_NONE, ...stars];
 }
 
 const DEFAULT_SHIRTS = [
@@ -233,14 +232,13 @@ function getPlayerOption(s, playerId) {
 function playerLineSuffix(s, playerId) {
   const p = getPlayerOption(s, playerId);
   if (p.id === "none") return "";
-  if (p.id === "custom") return " · Personalización (nombre/dorsal)";
   return ` · ${p.name} #${p.number || "—"}`;
 }
 
 function buildPlayerOptionsHTML(s, selectedId) {
-  const opts = s.players || [P_NONE, P_CUSTOM];
+  const opts = s.players || [P_NONE];
   return opts.map(p => {
-    const label = p.id === "none" ? "— Jugador / genérica —" : `${p.name}${p.number ? " #" + p.number : ""}`;
+    const label = p.id === "none" ? "— Sin jugador —" : `${p.name}${p.number ? " #" + p.number : ""}`;
     return `<option value="${p.id}"${p.id === selectedId ? " selected" : ""}>${label}</option>`;
   }).join("");
 }
@@ -763,7 +761,7 @@ function renderInquiryList() {
     const p = getPlayerOption(s, item.playerId || "none");
     let pl = "";
     if (p.id !== "none") {
-      pl = p.id === "custom" ? " · Personalizado" : ` · ${p.name} #${p.number || "—"}`;
+      pl = ` · ${p.name} #${p.number || "—"}`;
     }
     return `<li class="inquiry-item">
       <div>
@@ -876,7 +874,7 @@ function openProductModal(id, opts = {}) {
           </div>
         </div>
         <div class="modal-player-field">
-          <label class="modal-label" for="modal-player-sel">Jugador / personalización</label>
+          <label class="modal-label" for="modal-player-sel">Jugador</label>
           <select id="modal-player-sel" class="player-pick">${playerOpts}</select>
         </div>
         <div class="modal-sizes">

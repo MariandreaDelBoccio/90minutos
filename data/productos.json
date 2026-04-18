@@ -7,28 +7,12 @@
       "price": 100,
       "pricePlayer": 149.98,
       "league": "Selección",
-      "outOfStock": [
-        "XXL",
-        "XL"
-      ],
-      "sizes": [
-        "S",
-        "M",
-        "L"
-      ],
+      "outOfStock": ["XXL", "XL"],
+      "sizes": ["S", "M", "L"],
       "players": [
-        {
-          "name": "Lamine Yamal",
-          "id": "lamineyamal"
-        },
-        {
-          "name": "Pedri",
-          "id": "pedri"
-        },
-        {
-          "name": "Dani Olmo",
-          "id": "daniolmo"
-        }
+        { "name": "Lamine Yamal", "id": "lamineyamal" },
+        { "name": "Pedri", "id": "pedri" },
+        { "name": "Dani Olmo", "id": "daniolmo" }
       ],
       "club": "España",
       "id": "sp-2026-red",
@@ -43,13 +27,9 @@
       "price": 200,
       "pricePlayer": 400,
       "league": "LaLiga",
+      "homeFeatured": true,
       "outOfStock": [],
-      "sizes": [
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
+      "sizes": ["S", "M", "L", "XL"],
       "players": [],
       "club": "Real Madrid",
       "id": "rm-2425-home",
@@ -63,26 +43,12 @@
       "price": 44.99,
       "pricePlayer": 74.99,
       "league": "LaLiga",
-      "outOfStock": [
-        "L"
-      ],
-      "sizes": [
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
+      "homeFeatured": true,
+      "outOfStock": ["L"],
+      "sizes": ["S", "M", "L", "XL"],
       "players": [
-        {
-          "id": "yamal",
-          "name": "Lamine Yamal",
-          "number": "10"
-        },
-        {
-          "id": "lewandowski",
-          "name": "Lewandowski",
-          "number": "9"
-        }
+        { "id": "yamal", "name": "Lamine Yamal", "number": "10" },
+        { "id": "lewandowski", "name": "Lewandowski", "number": "9" }
       ],
       "club": "FC Barcelona",
       "id": "2",
@@ -95,24 +61,12 @@
       "price": 52,
       "pricePlayer": 86,
       "league": "Premier League",
+      "homeFeatured": true,
       "outOfStock": [],
-      "sizes": [
-        "M",
-        "L",
-        "XL",
-        "XXL"
-      ],
+      "sizes": ["M", "L", "XL", "XXL"],
       "players": [
-        {
-          "id": "haaland",
-          "name": "Haaland",
-          "number": "9"
-        },
-        {
-          "id": "debruyne",
-          "name": "De Bruyne",
-          "number": "17"
-        }
+        { "id": "haaland", "name": "Haaland", "number": "9" },
+        { "id": "debruyne", "name": "De Bruyne", "number": "17" }
       ],
       "club": "Manchester City",
       "id": "3",
@@ -126,23 +80,12 @@
       "price": 49,
       "pricePlayer": 79.99,
       "league": "Premier League",
+      "homeFeatured": true,
       "outOfStock": [],
-      "sizes": [
-        "M",
-        "L",
-        "XL"
-      ],
+      "sizes": ["M", "L", "XL"],
       "players": [
-        {
-          "id": "salah",
-          "name": "Salah",
-          "number": "11"
-        },
-        {
-          "id": "van_dijk",
-          "name": "Van Dijk",
-          "number": "4"
-        }
+        { "id": "salah", "name": "Salah", "number": "11" },
+        { "id": "van_dijk", "name": "Van Dijk", "number": "4" }
       ],
       "club": "Liverpool",
       "id": "4",

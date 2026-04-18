@@ -4,13 +4,11 @@ const INSTAGRAM_USER = "90minutos.ss";
 const PRODUCTS_URL = "data/productos.json";
 const FX_DOLARES_URL = "https://ve.dolarapi.com/v1/dolares";
 
-const LINEUP_HOOKS = ["CORTE AFILADO", "ACERO FRÍO", "SOMBRA ABSOLUTA", "RAYADO"];
-
 const FALLBACK_LINEUP = [
-  { id: "1", club: "Real Madrid", team: "Real Madrid 24/25", league: "LaLiga", image: "assets/productos/descarga.jpeg" },
-  { id: "2", club: "FC Barcelona", team: "FC Barcelona Away 24/25", league: "LaLiga", image: "assets/productos/descarga (1).jpeg" },
-  { id: "3", club: "Manchester City", team: "Manchester City Home 24/25", league: "Premier League", image: "assets/productos/descarga (2).jpeg" },
-  { id: "4", club: "Liverpool", team: "Liverpool Home 24/25", league: "Premier League", image: "assets/productos/descarga (3).jpeg" },
+  { id: "1", club: "Real Madrid", team: "Real Madrid 24/25", league: "LaLiga", image: "assets/productos/descarga.jpeg", homeFeatured: true },
+  { id: "2", club: "FC Barcelona", team: "FC Barcelona Away 24/25", league: "LaLiga", image: "assets/productos/descarga (1).jpeg", homeFeatured: true },
+  { id: "3", club: "Manchester City", team: "Manchester City Home 24/25", league: "Premier League", image: "assets/productos/descarga (2).jpeg", homeFeatured: true },
+  { id: "4", club: "Liverpool", team: "Liverpool Home 24/25", league: "Premier League", image: "assets/productos/descarga (3).jpeg", homeFeatured: true },
 ];
 
 function instagramDmUrl() {
@@ -85,13 +83,20 @@ async function loadLineupProducts() {
     const payload = await res.json();
     const list = Array.isArray(payload) ? payload : payload?.productos;
     if (!Array.isArray(list) || list.length === 0) throw new Error("empty");
-    return list.slice(0, 4).map((p, i) => ({
+    const normalized = list.map((p, i) => ({
       id: String(p.id ?? i + 1),
       club: p.club || "",
       team: p.team || "",
+      season: p.season || "",
       league: p.league || "",
       image: typeof p.image === "string" && p.image.trim() ? p.image.trim() : FALLBACK_LINEUP[i]?.image || "",
+      homeFeatured: p?.homeFeatured === true,
     }));
+    const featured = normalized.filter(p => p.homeFeatured);
+    const selected = featured.length
+      ? [...featured, ...normalized.filter(p => !p.homeFeatured)].slice(0, 4)
+      : normalized.slice(0, 4);
+    return selected;
   } catch (_) {
     return FALLBACK_LINEUP;
   }
@@ -113,15 +118,14 @@ function buildShowcaseHTML(items) {
   const steps = items
     .map((p, i) => {
       const num = pad2(i + 1);
-      const hook = LINEUP_HOOKS[i] || "DESTACADO";
       const href = `catalogo.html#/camisa/${encodeURIComponent(p.id)}`;
       return `
       <article class="home-showcase__step" data-showcase-step="${i}" id="showcase-step-${i}">
         <span class="home-showcase__step-num" aria-hidden="true">${num}</span>
         <p class="home-showcase__step-kicker">DESTACADO ${num}</p>
-        <h3 class="home-showcase__step-hook">${hook}</h3>
+        <h3 class="home-showcase__step-hook">${escapeHtml(p.team || p.club || `Producto ${num}`)}</h3>
         <p class="home-showcase__step-meta"><span>${escapeHtml(p.club)}</span> · ${escapeHtml(p.league)}</p>
-        <p class="home-showcase__step-team muted">${escapeHtml(p.team)}</p>
+        <p class="home-showcase__step-team muted">${escapeHtml(p.season || "")}</p>
         <a class="btn btn-mid-cta home-showcase__step-btn" href="${href}">Ver en catálogo</a>
       </article>`;
     })
