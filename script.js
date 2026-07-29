@@ -21,6 +21,7 @@ const YUPOO_PAGE_URL = (n) => `data/yupoo/pages/page-${n}.json`;
 const YUPOO_SEARCH_URL = "data/yupoo/search-index.json";
 const YUPOO_ID_MAP_URL = "data/yupoo/id-to-page.json";
 const YUPOO_TEAMS_URL = "data/yupoo/teams.json";
+const YUPOO_CURATION_URL = "data/yupoo-curation.json";
 const YUPOO_TEAM_OTHER = "__other__";
 const FILTER_DISPONIBLES = "DISPONIBLES";
 const FILTER_YUPOO = "TODO EL CATÁLOGO";
@@ -141,9 +142,11 @@ let yupooSearchIndex = null;
 let yupooIdToPage = null;
 let yupooPage = 1;
 let yupooLoadToken = 0;
-/** @type {{ id: string, name: string, aliases: string[], count: number, thumb: string }[] | null} */
+/** @type {{ id: string, name: string, aliases: string[], count: number, thumb: string, featured?: boolean, sortOrder?: number }[] | null} */
 let yupooTeams = null;
 let yupooUnmatchedCount = 0;
+/** @type {{ teams: Array<{id:string,name:string,aliases:string[],hidden?:boolean,featured?:boolean,sortOrder?:number}>, hideTitleContains: string[], hideGroupIds: string[], featuredGroupIds: string[] } | null} */
+let yupooCuration = null;
 /** null = vista de equipos; id de equipo o YUPOO_TEAM_OTHER = camisas de ese equipo */
 let yupooSelectedTeamId = null;
 /** Filtros dentro de las camisas de un equipo */
@@ -423,6 +426,7 @@ function invalidateYupooCaches() {
   yupooSearchIndex = null;
   yupooIdToPage = null;
   yupooTeams = null;
+  yupooCuration = null;
   yupooUnmatchedCount = 0;
   yupooPageCache.clear();
   yupooItemById.clear();
@@ -478,6 +482,66 @@ async function loadYupooTeams() {
   yupooTeams = Array.isArray(data?.teams) ? data.teams : [];
   yupooUnmatchedCount = Number(data?.unmatchedGroups) || 0;
   return yupooTeams;
+}
+
+function curationStringList(raw, key) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      if (typeof item === "string") return item.trim();
+      if (item && typeof item === "object") {
+        const v = item[key] ?? item.word ?? item.id ?? item.value;
+        return v != null ? String(v).trim() : "";
+      }
+      return "";
+    })
+    .filter(Boolean);
+}
+
+async function loadYupooCuration() {
+  await loadYupooMeta();
+  if (yupooCuration) return yupooCuration;
+  try {
+    const res = await fetch(yupooAssetUrl(YUPOO_CURATION_URL), { cache: "no-store" });
+    if (!res.ok) throw new Error("yupoo-curation");
+    const raw = await res.json();
+    const teams = Array.isArray(raw?.teams)
+      ? raw.teams.map((t, i) => ({
+          id: String(t?.id || `team-${i + 1}`),
+          name: String(t?.name || t?.id || ""),
+          aliases: typeof t?.aliases === "string"
+            ? t.aliases.split(",").map((a) => a.trim().toLowerCase()).filter(Boolean)
+            : (Array.isArray(t?.aliases) ? t.aliases.map((a) => String(a).toLowerCase()) : []),
+          hidden: t?.hidden === true,
+          featured: t?.featured === true,
+          sortOrder: Number(t?.sortOrder) || i + 1,
+        }))
+      : [];
+    yupooCuration = {
+      teams,
+      hideTitleContains: curationStringList(raw?.hideTitleContains, "word").map((s) => s.toLowerCase()),
+      hideGroupIds: curationStringList(raw?.hideGroupIds, "id"),
+      featuredGroupIds: curationStringList(raw?.featuredGroupIds, "id"),
+    };
+  } catch (_) {
+    yupooCuration = { teams: [], hideTitleContains: [], hideGroupIds: [], featuredGroupIds: [] };
+  }
+  return yupooCuration;
+}
+
+function isYupooRowHiddenByCuration(row, curation) {
+  if (!row || !curation) return false;
+  const id = String(row.id || "");
+  if (id && curation.hideGroupIds.includes(id)) return true;
+  const hay = `${row.haystack || ""} ${row.title || ""}`.toLowerCase();
+  for (const needle of curation.hideTitleContains || []) {
+    if (needle && hay.includes(needle)) return true;
+  }
+  if (row.teamId) {
+    const team = (curation.teams || []).find((t) => t.id === row.teamId);
+    if (team?.hidden) return true;
+  }
+  return false;
 }
 
 function getSelectedYupooTeam() {
@@ -1553,14 +1617,27 @@ async function renderYupooTeamsGrid() {
   renderYupooTeamNav();
 
   try {
-    const [teams] = await Promise.all([loadYupooTeams(), loadYupooMeta()]);
+    const [teams, curation] = await Promise.all([loadYupooTeams(), loadYupooCuration(), loadYupooMeta()]);
     if (token !== yupooLoadToken || !isYupooMode()) return;
 
+    const hiddenTeamIds = new Set((curation.teams || []).filter((t) => t.hidden).map((t) => t.id));
+    const featuredIds = new Set((curation.teams || []).filter((t) => t.featured).map((t) => t.id));
+    const sortMap = new Map((curation.teams || []).map((t) => [t.id, t.sortOrder ?? 9999]));
+
     const q = catalogSearch.trim();
-    let list = teams.slice();
+    let list = teams.filter((t) => !hiddenTeamIds.has(t.id));
+    list.sort((a, b) => {
+      const fa = featuredIds.has(a.id) || a.featured;
+      const fb = featuredIds.has(b.id) || b.featured;
+      if (fa !== fb) return fa ? -1 : 1;
+      const sa = sortMap.get(a.id) ?? a.sortOrder ?? 9999;
+      const sb = sortMap.get(b.id) ?? b.sortOrder ?? 9999;
+      if (sa !== sb) return sa - sb;
+      return (b.count || 0) - (a.count || 0) || String(a.name).localeCompare(String(b.name), "es");
+    });
+
     if (q) {
-      // "españa 2-star" → entrar en España con esa búsqueda
-      const teamHit = matchTeamFromSearchQuery(q, teams);
+      const teamHit = matchTeamFromSearchQuery(q, list);
       if (teamHit) {
         yupooSelectedTeamId = teamHit.id;
         return renderYupooProductsGrid(token);
@@ -1568,7 +1645,6 @@ async function renderYupooTeamsGrid() {
       list = list.filter((t) => matchesYupooSearch([t.name, ...(t.aliases || [])].join(" "), q));
     }
 
-    // Si la búsqueda no pega con nombres de equipo, caer a resultados de camisas
     if (q && list.length === 0) {
       return renderYupooProductsGrid(token);
     }
@@ -1621,10 +1697,10 @@ async function renderYupooProductsGrid(existingToken) {
 
     const q = catalogSearch.trim();
     const pageSize = meta.pageSize || 100;
-    const index = await loadYupooSearchIndex();
+    const [index, curation] = await Promise.all([loadYupooSearchIndex(), loadYupooCuration()]);
     if (token !== yupooLoadToken || !isYupooMode()) return;
 
-    let teamRows = filterIndexBySelectedTeam(index);
+    let teamRows = filterIndexBySelectedTeam(index).filter((row) => !isYupooRowHiddenByCuration(row, curation));
     if (q) {
       teamRows = teamRows.filter((row) =>
         matchesYupooSearch([row.haystack || "", row.title || "", row.teamId || ""].join(" "), q)

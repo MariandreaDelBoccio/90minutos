@@ -19,7 +19,12 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import { YUPOO_TEAMS, matchTeamFromTitle } from "./yupoo-team-dict.mjs";
+import {
+  loadCuration,
+  buildAliasIndex,
+  matchTeamFromTitle,
+  isHiddenByCuration,
+} from "./yupoo-team-dict.mjs";
 
 const BASE = "https://pinhuistore.x.yupoo.com";
 const GALLERY_PATH = "/albums?tab=gallery";
@@ -241,7 +246,7 @@ function flattenAlbums(pagesItems) {
   return out;
 }
 
-function buildGroups(albums) {
+function buildGroups(albums, aliasIndex) {
   const buckets = new Map();
   for (const album of albums) {
     const key = groupKeyFrom(album.title);
@@ -270,7 +275,7 @@ function buildGroups(albums) {
     }));
 
     const primary = variants[0];
-    const team = matchTeamFromTitle(title) || matchTeamFromTitle(primary.title);
+    const team = matchTeamFromTitle(title, aliasIndex) || matchTeamFromTitle(primary.title, aliasIndex);
     groups.push({
       id: `g:${slug}`,
       title,
@@ -312,7 +317,7 @@ async function readLocalAlbums() {
   return flattenAlbums(all);
 }
 
-async function writeCatalog(groups, metaExtra = {}) {
+async function writeCatalog(groups, curation, metaExtra = {}) {
   await fs.mkdir(PAGES_DIR, { recursive: true });
 
   const existing = await fs.readdir(PAGES_DIR).catch(() => []);
@@ -333,12 +338,12 @@ async function writeCatalog(groups, metaExtra = {}) {
   }
 
   const albumCount = groups.reduce((n, g) => n + (g.variants?.length || 1), 0);
+  const teamById = new Map((curation.teams || []).map((t) => [t.id, t]));
 
   const searchIndex = groups.map((g) => ({
     id: g.id,
     title: g.title,
     teamId: g.teamId || null,
-    // Texto extra para buscar por variantes (Player, Kids…)
     haystack: [g.title, g.teamName, ...(g.variants || []).map((v) => v.title)].filter(Boolean).join(" ").toLowerCase(),
   }));
   await fs.writeFile(path.join(OUT_DIR, "search-index.json"), JSON.stringify(searchIndex), "utf8");
@@ -351,16 +356,18 @@ async function writeCatalog(groups, metaExtra = {}) {
   });
   await fs.writeFile(path.join(OUT_DIR, "id-to-page.json"), JSON.stringify(idToPage), "utf8");
 
-  // Tarjetas de equipo: solo equipos con al menos 1 modelo
   const teamBuckets = new Map();
   for (const g of groups) {
     if (!g.teamId) continue;
+    const def = teamById.get(g.teamId);
+    if (def?.hidden) continue;
     if (!teamBuckets.has(g.teamId)) {
-      const def = YUPOO_TEAMS.find((t) => t.id === g.teamId);
       teamBuckets.set(g.teamId, {
         id: g.teamId,
         name: g.teamName || def?.name || g.teamId,
         aliases: def?.aliases || [],
+        featured: def?.featured === true,
+        sortOrder: def?.sortOrder ?? 9999,
         count: 0,
         thumb: g.thumb || "",
       });
@@ -369,9 +376,11 @@ async function writeCatalog(groups, metaExtra = {}) {
     bucket.count += 1;
     if (!bucket.thumb && g.thumb) bucket.thumb = g.thumb;
   }
-  const teams = [...teamBuckets.values()].sort(
-    (a, b) => b.count - a.count || a.name.localeCompare(b.name, "es")
-  );
+  const teams = [...teamBuckets.values()].sort((a, b) => {
+    if (a.featured !== b.featured) return a.featured ? -1 : 1;
+    if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+    return b.count - a.count || a.name.localeCompare(b.name, "es");
+  });
   const unmatched = groups.filter((g) => !g.teamId).length;
   await fs.writeFile(
     path.join(OUT_DIR, "teams.json"),
@@ -393,6 +402,7 @@ async function writeCatalog(groups, metaExtra = {}) {
     source: `${BASE}${GALLERY_PATH}`,
     grouped: true,
     teams: teams.length,
+    curationApplied: true,
     ...metaExtra,
   };
   await fs.writeFile(path.join(OUT_DIR, "meta.json"), JSON.stringify(meta, null, 2), "utf8");
@@ -458,11 +468,19 @@ async function main() {
     };
   }
 
-  const groups = buildGroups(albums);
-  const multi = groups.filter((g) => g.variantCount > 1).length;
-  console.log(`Agrupado: ${albums.length} álbumes → ${groups.length} modelos (${multi} con variantes)`);
+  const curation = await loadCuration({ force: true });
+  const aliasIndex = buildAliasIndex(curation.teams);
+  console.log(`Curación: ${curation.teams.length} equipos · hide títulos: ${curation.hideTitleContains.length}`);
 
-  const { pageCount, albumCount, teams, unmatched } = await writeCatalog(groups, metaExtra);
+  let rawGroups = buildGroups(albums, aliasIndex);
+  const beforeHide = rawGroups.length;
+  const groups = rawGroups.filter((g) => !isHiddenByCuration(g, curation));
+  const hidden = beforeHide - groups.length;
+  const multi = groups.filter((g) => g.variantCount > 1).length;
+  console.log(`Agrupado: ${albums.length} álbumes → ${beforeHide} modelos (${multi} con variantes)`);
+  if (hidden) console.log(`Ocultos por curación: ${hidden}`);
+
+  const { pageCount, albumCount, teams, unmatched } = await writeCatalog(groups, curation, metaExtra);
 
   console.log(`\nDone. ${groups.length} modelos (${albumCount} álbumes) → ${pageCount} pages (${PAGE_SIZE}/page)`);
   console.log(`Equipos: ${teams} · sin equipo: ${unmatched}`);

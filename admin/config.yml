@@ -12,12 +12,12 @@ public_folder: "/assets/productos"
 
 collections:
   - name: "catalogo"
-    label: "Catalogo"
+    label: "Disponibles"
     label_singular: "Producto"
     files:
       - file: "data/productos.json"
         name: "productos"
-        label: "Productos"
+        label: "Productos disponibles"
         format: "json"
         fields:
           - name: "productos"
@@ -81,3 +81,43 @@ collections:
                   - { name: "name", label: "Nombre del jugador", widget: "string" }
                   - { name: "number", label: "Dorsal", widget: "string", required: false }
                   - { name: "id", label: "ID interno", widget: "string", hint: "Ejemplo: bellingham" }
+
+  - name: "yupoo_curation"
+    label: "Catalogo completo"
+    files:
+      - file: "data/yupoo-curation.json"
+        name: "curation"
+        label: "Curacion Yupoo"
+        format: "json"
+        fields:
+          - name: "teams"
+            label: "Equipos"
+            widget: "list"
+            label_singular: "Equipo"
+            collapsed: true
+            summary: "{{fields.name}} ({{fields.id}})"
+            hint: "Nombres y aliases para agrupar camisas del proveedor (spain / espana)."
+            fields:
+              - { name: "id", label: "ID", widget: "string", hint: "Sin espacios. Ejemplo: spain, real-madrid" }
+              - { name: "name", label: "Nombre visible", widget: "string", hint: "Ejemplo: Espana" }
+              - { name: "aliases", label: "Aliases (separados por coma)", widget: "string", hint: "Ejemplo: spain, espana, spanish national" }
+              - { name: "hidden", label: "Ocultar equipo", widget: "boolean", default: false, required: false }
+              - { name: "featured", label: "Destacar en la lista", widget: "boolean", default: false, required: false }
+              - { name: "sortOrder", label: "Orden", widget: "number", value_type: "int", required: false, default: 100, hint: "Menor = aparece antes." }
+          - name: "hideTitleContains"
+            label: "Ocultar si el titulo contiene"
+            widget: "list"
+            required: false
+            field: { name: "word", label: "Palabra o frase", widget: "string" }
+            hint: "Ejemplo: bape, chrome hearts. No distingue mayusculas."
+          - name: "hideGroupIds"
+            label: "Ocultar IDs de grupo"
+            widget: "list"
+            required: false
+            field: { name: "id", label: "ID grupo Yupoo", widget: "string", hint: "Ejemplo: g:spain-2026-home-2-star-champion-edition" }
+          - name: "featuredGroupIds"
+            label: "Grupos destacados (IDs)"
+            widget: "list"
+            required: false
+            field: { name: "id", label: "ID grupo Yupoo", widget: "string" }
+            hint: "Para bloques de novedades. Ejemplo: g:spain-2026-home-2-star-champion-edition"

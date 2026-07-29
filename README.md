@@ -56,7 +56,23 @@ npm run sync-yupoo -- --regroup-only
 
 Después del sync, haz commit de esos JSON y publica (Netlify rebuild) para que la web los sirva.
 
-En **TODO EL CATÁLOGO** la web muestra primero **tarjetas de equipo** (España, Real Madrid…). Al entrar en un equipo ves las camisas cuyo título coincide con aliases en varios idiomas (`spain` / `españa`, etc.). El diccionario está en `scripts/yupoo-team-dict.mjs`.
+En **TODO EL CATÁLOGO** la web muestra primero **tarjetas de equipo** (España, Real Madrid…). Al entrar en un equipo ves las camisas cuyo título coincide con aliases en varios idiomas (`spain` / `españa`, etc.).
+
+### Curación desde el admin (CMS)
+
+Archivo editable: [`data/yupoo-curation.json`](data/yupoo-curation.json) (colección **Catalogo completo** en `/admin`).
+
+- Equipos, aliases, ocultar/destacar
+- Ocultar por palabra en el título o por id de grupo
+- Grupos destacados (ids)
+
+### Actualizar catálogo (camisas nuevas)
+
+- Página admin: [`/admin/sync-yupoo.html`](admin/sync-yupoo.html)
+- O GitHub → Actions → **Sync Yupoo** → *Run workflow*
+- Cron: lunes 06:00 UTC
+
+No lances el scrape dentro del build de Netlify: usa el workflow.
 
 En Netlify, las edge functions sirven:
 - `/api/yupoo-img` — proxy de miniaturas/fotos (Yupoo rechaza hotlink directo)

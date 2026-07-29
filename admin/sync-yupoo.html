@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Actualizar catálogo Yupoo · Admin</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="admin.css" />
+    <style>
+      .sync-page { max-width: 40rem; margin: 48px auto; padding: 0 20px 64px; font-family: Inter, system-ui, sans-serif; }
+      .sync-page h1 { font-family: "Bebas Neue", sans-serif; font-size: 2.4rem; letter-spacing: 0.04em; font-weight: 400; margin: 0 0 12px; }
+      .sync-page p { line-height: 1.55; color: #475569; }
+      .sync-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+      .sync-actions a {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-height: 44px; padding: 0 18px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px;
+      }
+      .sync-actions .primary { background: #0f172a; color: #fff; }
+      .sync-actions .ghost { background: #f1f5f9; color: #0f172a; }
+      .sync-note { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; font-size: 14px; }
+      .sync-note code { font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="sync-page">
+      <p><a href="/admin/">← Volver al admin</a></p>
+      <h1>Actualizar catálogo completo</h1>
+      <p>
+        Este botón no scrapea desde el navegador: abre GitHub Actions para lanzar
+        <code>sync-yupoo</code>. El job descarga Yupoo, agrupa variantes, aplica la curación
+        y hace commit de <code>data/yupoo/</code>. Netlify publicará solo.
+      </p>
+      <div class="sync-actions">
+        <a class="primary" id="btn-run-sync" href="https://github.com/MariandreaDelBoccio/90minutos/actions/workflows/sync-yupoo.yml" target="_blank" rel="noopener noreferrer">
+          Abrir sync en GitHub Actions
+        </a>
+        <a class="ghost" href="/admin/#/collections/yupoo_curation/entries/curation">Editar curación</a>
+        <a class="ghost" href="/catalogo.html">Ver catálogo</a>
+      </div>
+      <div class="sync-note">
+        <strong>Cómo lanzarlo:</strong> en la página de Actions pulsa <em>Run workflow</em> → <em>Run workflow</em>.
+        Suele tardar varios minutos. Cuando el job termine en verde, recarga la web.
+        También corre solo los lunes a las 06:00 UTC.
+      </div>
+    </div>
+  </body>
+</html>
