@@ -804,7 +804,7 @@
       "id": "lazio",
       "name": "Lazio",
       "aliases": "lazio",
-      "hidden": "false",
+      "hidden": "true",
       "featured": "false",
       "sortOrder": 101
     },
