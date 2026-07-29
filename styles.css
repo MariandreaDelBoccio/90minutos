@@ -995,6 +995,64 @@ button { font: inherit; cursor: pointer; background: none; border: 0; color: inh
 .catalog-empty { grid-column: 1 / -1; text-align: center; padding: 48px 20px; font-size: 15px; }
 
 /* ---------- Yupoo full catalog ---------- */
+.yupoo-nav {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 18px;
+  padding: 12px 0 4px;
+}
+.yupoo-nav[hidden] { display: none; }
+.yupoo-nav-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+.yupoo-nav-hint { margin: 0; max-width: 52rem; }
+.yupoo-nav-back {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.yupoo-nav-current {
+  display: grid;
+  gap: 2px;
+}
+.yupoo-nav-current strong {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  font-weight: 400;
+}
+.yupoo-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  align-items: end;
+}
+.yupoo-filter-field {
+  display: grid;
+  gap: 4px;
+  min-width: 140px;
+}
+.yupoo-filter-field label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #94a3b8);
+}
+.yupoo-filters-reset {
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.card--yupoo-team .team {
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+}
+.card--yupoo-team .card-meta {
+  margin-top: 4px;
+}
 .card--yupoo .team {
   font-size: 14px;
   line-height: 1.35;

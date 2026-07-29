@@ -41,12 +41,22 @@ npm run sync-yupoo -- --delay 600
 
 Genera:
 
-- `data/yupoo/meta.json` — total, páginas, fecha de sync
-- `data/yupoo/pages/page-N.json` — chunks de ~100 ítems (id, title, thumb, url)
-- `data/yupoo/search-index.json` — índice liviano para búsqueda por título
-- `data/yupoo/id-to-page.json` — mapa id → página para hidratar resultados de búsqueda
+- `data/yupoo/meta.json` — total de **modelos** (agrupados), álbumes, páginas, fecha de sync
+- `data/yupoo/pages/page-N.json` — chunks de ~100 **grupos** (title + `variants[]`)
+- `data/yupoo/search-index.json` — índice liviano para búsqueda por título/variantes
+- `data/yupoo/id-to-page.json` — mapa id de grupo/álbum → página
+
+Las variantes del mismo modelo (Fan/Player, manga larga, mujer, niños…) se agrupan por reglas de texto en el título, sin LLM.
+
+Si ya tienes los JSON locales y solo quieres reagrupar:
+
+```bash
+npm run sync-yupoo -- --regroup-only
+```
 
 Después del sync, haz commit de esos JSON y publica (Netlify rebuild) para que la web los sirva.
+
+En **TODO EL CATÁLOGO** la web muestra primero **tarjetas de equipo** (España, Real Madrid…). Al entrar en un equipo ves las camisas cuyo título coincide con aliases en varios idiomas (`spain` / `españa`, etc.). El diccionario está en `scripts/yupoo-team-dict.mjs`.
 
 En Netlify, las edge functions sirven:
 - `/api/yupoo-img` — proxy de miniaturas/fotos (Yupoo rechaza hotlink directo)

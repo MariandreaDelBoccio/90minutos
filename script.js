@@ -20,6 +20,8 @@ const YUPOO_META_URL = "data/yupoo/meta.json";
 const YUPOO_PAGE_URL = (n) => `data/yupoo/pages/page-${n}.json`;
 const YUPOO_SEARCH_URL = "data/yupoo/search-index.json";
 const YUPOO_ID_MAP_URL = "data/yupoo/id-to-page.json";
+const YUPOO_TEAMS_URL = "data/yupoo/teams.json";
+const YUPOO_TEAM_OTHER = "__other__";
 const FILTER_DISPONIBLES = "DISPONIBLES";
 const FILTER_YUPOO = "TODO EL CATÁLOGO";
 
@@ -137,6 +139,19 @@ let yupooSearchIndex = null;
 let yupooIdToPage = null;
 let yupooPage = 1;
 let yupooLoadToken = 0;
+/** @type {{ id: string, name: string, aliases: string[], count: number, thumb: string }[] | null} */
+let yupooTeams = null;
+let yupooUnmatchedCount = 0;
+/** null = vista de equipos; id de equipo o YUPOO_TEAM_OTHER = camisas de ese equipo */
+let yupooSelectedTeamId = null;
+/** Filtros dentro de las camisas de un equipo */
+let yupooShirtFilters = {
+  kit: "ALL",
+  audience: "ALL",
+  version: "ALL",
+  sleeve: "ALL",
+  edition: "ALL",
+};
 /** Cache de ítems Yupoo vistos (para modal / consulta) */
 const yupooItemById = new Map();
 
@@ -242,25 +257,26 @@ function toggleFavorite(id) {
   if (activeFilter === "FAVORITOS") renderGrid();
 }
 
-function toggleYupooFavorite(albumId) {
-  const id = String(albumId);
+function toggleYupooFavorite(albumOrGroupId) {
+  const group = getYupooItem(albumOrGroupId) || normalizeYupooGroup(yupooFavMeta[String(albumOrGroupId)]);
+  if (!group) return;
+  const id = String(group.id);
   const fid = yupooFavId(id);
-  const item = getYupooItem(id) || yupooFavMeta[id];
   if (favoriteIds.has(fid)) {
     favoriteIds.delete(fid);
     delete yupooFavMeta[id];
   } else {
     favoriteIds.add(fid);
-    if (item) {
-      yupooFavMeta[id] = {
-        id: String(item.id),
-        title: item.title || "",
-        thumb: item.thumb || "",
-        url: item.url || "",
-        photoCount: Number(item.photoCount) || 0,
-      };
-      rememberYupooItems([yupooFavMeta[id]]);
-    }
+    yupooFavMeta[id] = {
+      id: group.id,
+      title: group.title || "",
+      thumb: group.thumb || group.variants?.[0]?.thumb || "",
+      url: group.variants?.[0]?.url || group.url || "",
+      photoCount: group.photoCount || group.variants?.[0]?.photoCount || 0,
+      variantCount: group.variantCount || group.variants?.length || 1,
+      variants: group.variants || [],
+    };
+    rememberYupooItems([yupooFavMeta[id]]);
   }
   saveFavorites();
   saveYupooFavMeta();
@@ -310,12 +326,77 @@ function isYupooMode() {
 function rememberYupooItems(items) {
   if (!Array.isArray(items)) return;
   for (const it of items) {
-    if (it?.id) yupooItemById.set(String(it.id), it);
+    if (!it?.id) continue;
+    const group = normalizeYupooGroup(it);
+    yupooItemById.set(String(group.id), group);
+    for (const v of group.variants) {
+      if (!v?.id) continue;
+      yupooItemById.set(String(v.id), { ...v, _groupId: group.id });
+    }
   }
 }
 
+function normalizeYupooGroup(item) {
+  if (!item) return null;
+  if (Array.isArray(item.variants) && item.variants.length) {
+    return {
+      ...item,
+      id: String(item.id),
+      title: item.title || item.variants[0]?.title || "",
+      thumb: item.thumb || item.variants[0]?.thumb || "",
+      variantCount: item.variants.length,
+      variants: item.variants.map((v) => ({
+        id: String(v.id),
+        title: v.title || item.title || "",
+        thumb: v.thumb || item.thumb || "",
+        url: v.url || "",
+        photoCount: Number(v.photoCount) || 0,
+        label: v.label || "Estándar",
+      })),
+    };
+  }
+  // Álbum suelto (favoritos antiguos / datos previos al agrupado)
+  return {
+    id: String(item.id),
+    title: item.title || "",
+    thumb: item.thumb || "",
+    url: item.url || "",
+    photoCount: Number(item.photoCount) || 0,
+    variantCount: 1,
+    variants: [{
+      id: String(item.id),
+      title: item.title || "",
+      thumb: item.thumb || "",
+      url: item.url || "",
+      photoCount: Number(item.photoCount) || 0,
+      label: "Estándar",
+    }],
+  };
+}
+
 function getYupooItem(id) {
-  return yupooItemById.get(String(id)) || null;
+  const raw = String(id || "").replace(/^yupoo:/, "");
+  const hit = yupooItemById.get(raw);
+  if (!hit) return null;
+  if (hit._groupId) return yupooItemById.get(String(hit._groupId)) || null;
+  return normalizeYupooGroup(hit);
+}
+
+function getYupooVariant(group, variantId) {
+  if (!group?.variants?.length) return null;
+  return group.variants.find((v) => String(v.id) === String(variantId)) || group.variants[0];
+}
+
+/** Una opción por etiqueta (Fan, Player…); si hay duplicados del proveedor, prioriza más fotos. */
+function uniqueYupooVariants(group) {
+  const list = group?.variants || [];
+  const byLabel = new Map();
+  for (const v of list) {
+    const key = v.label || v.title || v.id;
+    const prev = byLabel.get(key);
+    if (!prev || (v.photoCount || 0) > (prev.photoCount || 0)) byLabel.set(key, v);
+  }
+  return [...byLabel.values()];
 }
 
 /** photo.yupoo.com bloquea hotlink; servir vía /api/yupoo-img */
@@ -364,6 +445,124 @@ async function loadYupooIdMap() {
   if (!res.ok) throw new Error("yupoo-idmap");
   yupooIdToPage = await res.json();
   return yupooIdToPage;
+}
+
+async function loadYupooTeams() {
+  if (yupooTeams) return yupooTeams;
+  const res = await fetch(YUPOO_TEAMS_URL, { cache: "force-cache" });
+  if (!res.ok) throw new Error("yupoo-teams");
+  const data = await res.json();
+  yupooTeams = Array.isArray(data?.teams) ? data.teams : [];
+  yupooUnmatchedCount = Number(data?.unmatchedGroups) || 0;
+  return yupooTeams;
+}
+
+function getSelectedYupooTeam() {
+  if (!yupooSelectedTeamId) return null;
+  if (yupooSelectedTeamId === YUPOO_TEAM_OTHER) {
+    return { id: YUPOO_TEAM_OTHER, name: "Otros modelos", count: 0, thumb: "", aliases: [] };
+  }
+  return (yupooTeams || []).find((t) => t.id === yupooSelectedTeamId) || null;
+}
+
+function selectYupooTeam(teamId) {
+  yupooSelectedTeamId = teamId || null;
+  yupooShirtFilters = { kit: "ALL", audience: "ALL", version: "ALL", sleeve: "ALL", edition: "ALL" };
+  yupooPage = 1;
+  renderGrid();
+  document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function clearYupooTeam() {
+  selectYupooTeam(null);
+}
+
+function resetYupooShirtFilters() {
+  yupooShirtFilters = { kit: "ALL", audience: "ALL", version: "ALL", sleeve: "ALL", edition: "ALL" };
+}
+
+function normalizeSearchText(s) {
+  return String(s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/(\d)[-\s]*star/g, "$1 star")
+    .replace(/[–—_/-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function searchTokens(q) {
+  return normalizeSearchText(q).split(" ").filter(Boolean);
+}
+
+/** Todas las palabras de la query deben aparecer en el texto (AND), ignorando guiones/acentos. */
+function matchesYupooSearch(text, q) {
+  const tokens = searchTokens(q);
+  if (!tokens.length) return true;
+  const hay = normalizeSearchText(text);
+  return tokens.every((t) => hay.includes(t));
+}
+
+/**
+ * Si la query incluye un equipo + algo más ("españa 2 star"),
+ * devolvemos ese equipo para abrir su catálogo filtrado.
+ */
+function matchTeamFromSearchQuery(q, teams) {
+  const tokens = searchTokens(q);
+  if (tokens.length < 2 || !teams?.length) return null;
+  let best = null;
+  for (const team of teams) {
+    const aliases = [team.name, ...(team.aliases || [])];
+    for (const alias of aliases) {
+      const aliasToks = searchTokens(alias);
+      if (!aliasToks.length) continue;
+      if (!aliasToks.every((t) => tokens.includes(t))) continue;
+      const score = aliasToks.join(" ").length;
+      if (!best || score > best.score) best = { team, score, aliasToks };
+    }
+  }
+  if (!best) return null;
+  const remaining = tokens.filter((t) => !best.aliasToks.includes(t));
+  if (!remaining.length) return null;
+  return best.team;
+}
+
+/** Atributos deducidos del título/haystack (sin LLM). */
+function yupooHaystackFlags(haystack) {
+  const t = String(haystack || "").toLowerCase();
+  return {
+    home: /\bhome\b/.test(t),
+    away: /\baway\b/.test(t),
+    third: /\bthird\b|\bsecond away\b|\b2nd away\b/.test(t),
+    kids: /\bkids?\b|\bkid kits?\b|\bbaby\b/.test(t),
+    women: /women'?s?|\bmujer\b/.test(t),
+    player: /player\s+version/.test(t),
+    longSleeve: /long[-\s]?sleeve/.test(t),
+    twoStar: /2[-\s]?star|champion edition/.test(t),
+    worldCup: /world\s*cup|\bmundial\b/.test(t),
+    goalkeeper: /goalkeeper|\bportero\b|\bgk\b/.test(t),
+    retro: /\bretro\b/.test(t),
+  };
+}
+
+function matchesYupooShirtFilters(row) {
+  const f = yupooShirtFilters;
+  if (Object.values(f).every((v) => v === "ALL")) return true;
+  const flags = yupooHaystackFlags(row.haystack || row.title || "");
+  if (f.kit === "home" && !flags.home) return false;
+  if (f.kit === "away" && !flags.away) return false;
+  if (f.kit === "third" && !flags.third) return false;
+  if (f.kit === "gk" && !flags.goalkeeper) return false;
+  // Público / versión / manga = "tiene al menos esa variante" (los grupos mezclados siguen visibles)
+  if (f.audience === "kids" && !flags.kids) return false;
+  if (f.audience === "women" && !flags.women) return false;
+  if (f.version === "player" && !flags.player) return false;
+  if (f.sleeve === "long" && !flags.longSleeve) return false;
+  if (f.edition === "2star" && !flags.twoStar) return false;
+  if (f.edition === "worldcup" && !flags.worldCup) return false;
+  if (f.edition === "retro" && !flags.retro) return false;
+  return true;
 }
 
 async function hydrateYupooIds(ids) {
@@ -717,7 +916,9 @@ function buildCatalogRefine() {
   if (searchEl) {
     searchEl.value = catalogSearch;
     searchEl.placeholder = isYupoo
-      ? "Buscar en todo el catálogo (título)…"
+      ? (yupooSelectedTeamId
+        ? "Buscar dentro de este equipo…"
+        : "Buscar equipo o camisa…")
       : "Buscar por equipo, temporada, liga…";
   }
 
@@ -747,6 +948,8 @@ function buildFilters() {
       catalogSearch = "";
       subfilterClub = "ALL";
       subfilterSeason = "ALL";
+      yupooSelectedTeamId = null;
+      resetYupooShirtFilters();
       yupooPage = 1;
       const searchEl = document.getElementById("catalog-search");
       if (searchEl) searchEl.value = "";
@@ -872,29 +1075,31 @@ function bindYupooCards(grid) {
 }
 
 function yupooCardHTML(item, i) {
+  const group = normalizeYupooGroup(item);
   const heart = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
   const ig = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>`;
-  const src = yupooProxiedThumb(item.thumb);
+  const src = yupooProxiedThumb(group.thumb);
   const thumb = src
-    ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(item.title)}" loading="lazy" />`
+    ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(group.title)}" loading="lazy" />`
     : `<div class="bg" style="background:linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)"></div>`;
-  const photos = item.photoCount ? `${item.photoCount} fotos` : "Catálogo";
-  const fav = isYupooFavorite(item.id);
+  const nVar = uniqueYupooVariants(group).length;
+  const meta = nVar > 1 ? `${nVar} variantes` : (group.photoCount ? `${group.photoCount} fotos` : "Catálogo");
+  const fav = isYupooFavorite(group.id);
   return `
-  <article class="card card--yupoo${fav ? " card--fav" : ""}" data-yupoo-id="${escapeAttr(item.id)}" style="--d:${(i % 4) * 0.08}s">
+  <article class="card card--yupoo${fav ? " card--fav" : ""}" data-yupoo-id="${escapeAttr(group.id)}" style="--d:${(i % 4) * 0.08}s">
     <div class="img">
       ${thumb}
       <div class="water">90MIN</div>
       <div class="top">
-        <span></span>
+        <span>${nVar > 1 ? `<span class="badge-tag CONSULTA">×${nVar}</span>` : ""}</span>
         <button type="button" class="heart${fav ? " is-fav" : ""}" aria-label="Favorito">${heart}</button>
       </div>
       <button type="button" class="open-detail" aria-label="Ver detalle">Ver detalle</button>
       <button type="button" class="add-quick">${ig} Añadir a la consulta</button>
     </div>
     <div class="info">
-      <div class="team">${escapeHtml(item.title)}</div>
-      <div class="card-meta muted small">${photos}</div>
+      <div class="team">${escapeHtml(group.title)}</div>
+      <div class="card-meta muted small">${meta}</div>
       <div class="price-row">
         <div class="price-block">
           <div class="price">Bajo consulta</div>
@@ -917,20 +1122,29 @@ function escapeAttr(str) {
   return escapeHtml(str).replace(/'/g, "&#39;");
 }
 
-function addYupooToInquiry(id) {
-  const item = getYupooItem(id);
-  if (!item) {
+function addYupooToInquiry(groupOrVariantId, variantId) {
+  const group = getYupooItem(groupOrVariantId);
+  if (!group) {
     showToast("No se pudo añadir este modelo.");
     return;
   }
+  const variant = getYupooVariant(group, variantId || group.variants?.[0]?.id);
+  if (!variant) {
+    showToast("No se pudo añadir este modelo.");
+    return;
+  }
+  const unique = uniqueYupooVariants(group);
+  const title = unique.length > 1 && variant.label
+    ? `${group.title} · ${variant.label}`
+    : (variant.title || group.title);
   inquiryItems.push({
-    id: `yupoo:${item.id}`,
+    id: `yupoo:${variant.id}`,
     size: "—",
     edition: "fan",
     playerId: "none",
     source: "yupoo",
-    title: item.title,
-    url: item.url,
+    title,
+    url: variant.url,
   });
   saveInquiry();
   updateHeaderBadges();
@@ -971,145 +1185,430 @@ function bindYupooGallery(root, images, title) {
 }
 
 function openYupooModal(id) {
-  const item = getYupooItem(id);
+  const group = getYupooItem(id);
   const modal = document.getElementById("product-modal");
   const body = document.getElementById("modal-body");
-  if (!item || !modal || !body) return;
+  if (!group || !modal || !body) return;
 
+  let selectedVariantId = uniqueYupooVariants(group)[0]?.id || group.variants?.[0]?.id || String(id).replace(/^yupoo:/, "");
   const ig = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>`;
-  const fallbackSrc = yupooProxiedThumb(item.thumb);
-  productModalOpenId = `yupoo:${id}`;
+  const modalToken = `yupoo:${group.id}`;
+  productModalOpenId = modalToken;
 
-  body.innerHTML = `
-    <div class="modal-visual modal-visual--yupoo" data-yupoo-gallery>
-      <div class="yupoo-gallery">
-        <div class="yupoo-gallery-stage">
-          ${fallbackSrc
-            ? `<img class="yupoo-gallery-main" src="${escapeAttr(fallbackSrc)}" alt="${escapeAttr(item.title)}" />`
-            : `<div class="yupoo-gallery-placeholder"></div>`}
-          <button type="button" class="yupoo-gallery-nav yupoo-gallery-nav--prev" data-yupoo-prev aria-label="Foto anterior" hidden>‹</button>
-          <button type="button" class="yupoo-gallery-nav yupoo-gallery-nav--next" data-yupoo-next aria-label="Foto siguiente" hidden>›</button>
+  function currentVariant() {
+    return getYupooVariant(group, selectedVariantId);
+  }
+
+  function variantOptionsHTML() {
+    return uniqueYupooVariants(group).map((v) =>
+      `<option value="${escapeAttr(v.id)}"${String(v.id) === String(selectedVariantId) ? " selected" : ""}>${escapeHtml(v.label || v.title)}</option>`
+    ).join("");
+  }
+
+  function loadGalleryForVariant(variant) {
+    const galleryRoot = body.querySelector("[data-yupoo-gallery]");
+    const status = body.querySelector(".yupoo-gallery-status");
+    const thumbsWrap = body.querySelector(".yupoo-gallery-thumbs");
+    const countEl = body.querySelector(".js-yupoo-photo-count");
+    const main = galleryRoot?.querySelector(".yupoo-gallery-main");
+    const prev = galleryRoot?.querySelector("[data-yupoo-prev]");
+    const next = galleryRoot?.querySelector("[data-yupoo-next]");
+    if (!galleryRoot || !variant) return;
+
+    if (status) {
+      status.hidden = false;
+      status.textContent = "Cargando fotos del álbum…";
+    }
+    if (thumbsWrap) {
+      thumbsWrap.hidden = true;
+      thumbsWrap.innerHTML = "";
+    }
+    if (prev) prev.hidden = true;
+    if (next) next.hidden = true;
+    if (main && variant.thumb) {
+      main.src = yupooProxiedThumb(variant.thumb);
+      main.alt = variant.title || group.title;
+    }
+
+    fetchYupooAlbumImages(variant.id)
+      .then((images) => {
+        if (productModalOpenId !== modalToken) return;
+        if (String(selectedVariantId) !== String(variant.id)) return;
+
+        const list = images.length ? images : (variant.thumb ? [variant.thumb] : []);
+        if (!list.length) {
+          if (status) status.textContent = "No se encontraron fotos del álbum.";
+          return;
+        }
+        if (countEl) {
+          const nVar = uniqueYupooVariants(group).length;
+          countEl.textContent = nVar > 1
+            ? `${list.length} foto${list.length === 1 ? "" : "s"} · ${nVar} variantes`
+            : `${list.length} foto${list.length === 1 ? "" : "s"}`;
+        }
+        if (status) status.hidden = true;
+        if (list.length > 1) {
+          if (prev) prev.hidden = false;
+          if (next) next.hidden = false;
+        }
+        if (thumbsWrap && list.length > 1) {
+          thumbsWrap.hidden = false;
+          thumbsWrap.innerHTML = list.map((url, i) =>
+            `<button type="button" class="yupoo-gallery-thumb${i === 0 ? " active" : ""}" data-index="${i}" aria-label="Foto ${i + 1}">
+              <img src="${escapeAttr(yupooProxiedThumb(url))}" alt="" loading="lazy" />
+            </button>`
+          ).join("");
+        }
+        if (main) {
+          main.src = yupooProxiedThumb(list[0]);
+          main.alt = `${group.title} · foto 1`;
+        }
+        bindYupooGallery(galleryRoot, list, group.title);
+      })
+      .catch(() => {
+        if (productModalOpenId !== modalToken) return;
+        if (status) status.textContent = "No se pudieron cargar las fotos.";
+      });
+  }
+
+  function renderModal() {
+    const variant = currentVariant();
+    const fallbackSrc = yupooProxiedThumb(variant?.thumb || group.thumb);
+    const unique = uniqueYupooVariants(group);
+    const nVar = unique.length || group.variantCount || group.variants?.length || 1;
+    const variantField = nVar > 1
+      ? `<div class="modal-player-field">
+          <label class="modal-label" for="modal-yupoo-variant">Variante</label>
+          <select id="modal-yupoo-variant" class="player-pick">${variantOptionsHTML()}</select>
+        </div>`
+      : "";
+
+    body.innerHTML = `
+      <div class="modal-visual modal-visual--yupoo" data-yupoo-gallery>
+        <div class="yupoo-gallery">
+          <div class="yupoo-gallery-stage">
+            ${fallbackSrc
+              ? `<img class="yupoo-gallery-main" src="${escapeAttr(fallbackSrc)}" alt="${escapeAttr(group.title)}" />`
+              : `<div class="yupoo-gallery-placeholder"></div>`}
+            <button type="button" class="yupoo-gallery-nav yupoo-gallery-nav--prev" data-yupoo-prev aria-label="Foto anterior" hidden>‹</button>
+            <button type="button" class="yupoo-gallery-nav yupoo-gallery-nav--next" data-yupoo-next aria-label="Foto siguiente" hidden>›</button>
+          </div>
+          <p class="yupoo-gallery-status muted small">Cargando fotos del álbum…</p>
+          <div class="yupoo-gallery-thumbs" hidden></div>
         </div>
-        <p class="yupoo-gallery-status muted small">Cargando fotos del álbum…</p>
-        <div class="yupoo-gallery-thumbs" hidden></div>
       </div>
-    </div>
-    <div class="modal-info">
-      <h3 id="modal-title">${escapeHtml(item.title)}</h3>
-      <p class="muted small js-yupoo-photo-count">${item.photoCount ? `${item.photoCount} fotos en el álbum` : "Modelo"}</p>
-      <div class="modal-price-wrap">
-        <div class="modal-price-row">
-          <span class="price modal-price-live">Bajo consulta</span>
-          <span class="badge-tag CONSULTA">CONSULTA</span>
+      <div class="modal-info">
+        <h3 id="modal-title">${escapeHtml(group.title)}</h3>
+        <p class="muted small js-yupoo-photo-count">${nVar > 1 ? `${nVar} variantes` : (variant?.photoCount ? `${variant.photoCount} fotos en el álbum` : "Modelo")}</p>
+        <div class="modal-price-wrap">
+          <div class="modal-price-row">
+            <span class="price modal-price-live">Bajo consulta</span>
+            <span class="badge-tag CONSULTA">CONSULTA</span>
+          </div>
         </div>
-      </div>
-      <p class="muted small modal-desc">Este modelo forma parte del catálogo completo. Consulta disponibilidad, tallas y precio por Instagram. No forma parte del stock «Disponibles» curado.</p>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-primary btn-modal-ig" id="modal-add-inquiry">${ig} Añadir a la consulta</button>
-        <button type="button" class="btn btn-ghost" id="modal-toggle-fav-yupoo">${isYupooFavorite(id) ? "Quitar de favoritos" : "Guardar en favoritos"}</button>
-      </div>
-    </div>`;
+        <p class="muted small modal-desc">Este modelo forma parte del catálogo completo. Consulta disponibilidad, tallas y precio por Instagram. No forma parte del stock «Disponibles» curado.</p>
+        ${variantField}
+        <div class="modal-actions">
+          <button type="button" class="btn btn-primary btn-modal-ig" id="modal-add-inquiry">${ig} Añadir a la consulta</button>
+          <button type="button" class="btn btn-ghost" id="modal-toggle-fav-yupoo">${isYupooFavorite(group.id) ? "Quitar de favoritos" : "Guardar en favoritos"}</button>
+        </div>
+      </div>`;
 
-  document.getElementById("modal-add-inquiry")?.addEventListener("click", () => addYupooToInquiry(id));
-  document.getElementById("modal-toggle-fav-yupoo")?.addEventListener("click", () => toggleYupooFavorite(id));
+    document.getElementById("modal-yupoo-variant")?.addEventListener("change", (e) => {
+      selectedVariantId = e.target.value;
+      loadGalleryForVariant(currentVariant());
+    });
+    document.getElementById("modal-add-inquiry")?.addEventListener("click", () => addYupooToInquiry(group.id, selectedVariantId));
+    document.getElementById("modal-toggle-fav-yupoo")?.addEventListener("click", () => toggleYupooFavorite(group.id));
+    loadGalleryForVariant(variant);
+  }
 
-  document.title = `${item.title} · 90 Minutos Sports`;
+  renderModal();
+  document.title = `${group.title} · 90 Minutos Sports`;
   modal.classList.add("modal--open");
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
-
-  fetchYupooAlbumImages(id)
-    .then((images) => {
-      if (productModalOpenId !== `yupoo:${id}`) return;
-      const galleryRoot = body.querySelector("[data-yupoo-gallery]");
-      const status = body.querySelector(".yupoo-gallery-status");
-      const thumbsWrap = body.querySelector(".yupoo-gallery-thumbs");
-      const countEl = body.querySelector(".js-yupoo-photo-count");
-      if (!galleryRoot) return;
-
-      const list = images.length ? images : (item.thumb ? [item.thumb] : []);
-      if (!list.length) {
-        if (status) status.textContent = "No se encontraron fotos del álbum.";
-        return;
-      }
-
-      if (countEl) countEl.textContent = `${list.length} foto${list.length === 1 ? "" : "s"}`;
-      if (status) status.hidden = true;
-
-      const prev = galleryRoot.querySelector("[data-yupoo-prev]");
-      const next = galleryRoot.querySelector("[data-yupoo-next]");
-      if (list.length > 1) {
-        if (prev) prev.hidden = false;
-        if (next) next.hidden = false;
-      }
-
-      if (thumbsWrap && list.length > 1) {
-        thumbsWrap.hidden = false;
-        thumbsWrap.innerHTML = list.map((url, i) =>
-          `<button type="button" class="yupoo-gallery-thumb${i === 0 ? " active" : ""}" data-index="${i}" aria-label="Foto ${i + 1}">
-            <img src="${escapeAttr(yupooProxiedThumb(url))}" alt="" loading="lazy" />
-          </button>`
-        ).join("");
-      }
-
-      const main = galleryRoot.querySelector(".yupoo-gallery-main");
-      if (main) {
-        main.src = yupooProxiedThumb(list[0]);
-        main.alt = `${item.title} · foto 1`;
-      }
-      bindYupooGallery(galleryRoot, list, item.title);
-    })
-    .catch(() => {
-      if (productModalOpenId !== `yupoo:${id}`) return;
-      const status = body.querySelector(".yupoo-gallery-status");
-      if (status) status.textContent = "No se pudieron cargar las fotos.";
-    });
 }
 
-async function renderYupooGrid() {
+function setYupooNav(html) {
+  let nav = document.getElementById("yupoo-nav");
+  if (!nav) {
+    const grid = document.getElementById("grid");
+    if (!grid || !grid.parentElement) return;
+    nav = document.createElement("div");
+    nav.id = "yupoo-nav";
+    nav.className = "yupoo-nav";
+    grid.insertAdjacentElement("beforebegin", nav);
+  }
+  nav.hidden = !html;
+  nav.innerHTML = html || "";
+}
+
+function yupooTeamCardHTML(team, i) {
+  const src = yupooProxiedThumb(team.thumb);
+  const thumb = src
+    ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(team.name)}" loading="lazy" />`
+    : `<div class="bg" style="background:linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)"></div>`;
+  const countLabel = `${Number(team.count || 0).toLocaleString("es-ES")} modelo${team.count === 1 ? "" : "s"}`;
+  return `
+  <article class="card card--yupoo-team" data-yupoo-team="${escapeAttr(team.id)}" style="--d:${(i % 4) * 0.08}s">
+    <div class="img">
+      ${thumb}
+      <div class="water">90MIN</div>
+      <button type="button" class="open-detail" aria-label="Ver camisas de ${escapeAttr(team.name)}">Ver camisas</button>
+    </div>
+    <div class="info">
+      <div class="team">${escapeHtml(team.name)}</div>
+      <div class="card-meta muted small">${countLabel}</div>
+    </div>
+  </article>`;
+}
+
+function bindYupooTeamCards(grid) {
+  grid.querySelectorAll(".card--yupoo-team").forEach((card) => {
+    const id = card.dataset.yupooTeam;
+    const open = () => selectYupooTeam(id);
+    card.querySelector(".img")?.addEventListener("click", open);
+    card.querySelector(".open-detail")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      open();
+    });
+  });
+}
+
+function yupooFilterSelect(id, label, value, options) {
+  if (!options.length) return "";
+  const opts = [{ value: "ALL", label: "Todas" }, ...options]
+    .map((o) => `<option value="${escapeAttr(o.value)}"${o.value === value ? " selected" : ""}>${escapeHtml(o.label)}</option>`)
+    .join("");
+  return `<div class="yupoo-filter-field">
+    <label for="${id}">${escapeHtml(label)}</label>
+    <select id="${id}" class="refine-select yupoo-filter-select" data-yupoo-filter="${escapeAttr(id.replace("yupoo-filter-", ""))}">${opts}</select>
+  </div>`;
+}
+
+function buildYupooShirtFilterOptions(rows) {
+  const tallies = {
+    home: 0, away: 0, third: 0, gk: 0,
+    kids: 0, women: 0,
+    player: 0,
+    long: 0,
+    twoStar: 0, worldCup: 0, retro: 0,
+  };
+  for (const row of rows) {
+    const f = yupooHaystackFlags(row.haystack || row.title || "");
+    if (f.home) tallies.home++;
+    if (f.away) tallies.away++;
+    if (f.third) tallies.third++;
+    if (f.goalkeeper) tallies.gk++;
+    if (f.kids) tallies.kids++;
+    if (f.women) tallies.women++;
+    if (f.player) tallies.player++;
+    if (f.longSleeve) tallies.long++;
+    if (f.twoStar) tallies.twoStar++;
+    if (f.worldCup) tallies.worldCup++;
+    if (f.retro) tallies.retro++;
+  }
+  const kit = [];
+  if (tallies.home) kit.push({ value: "home", label: `Local (${tallies.home})` });
+  if (tallies.away) kit.push({ value: "away", label: `Visitante (${tallies.away})` });
+  if (tallies.third) kit.push({ value: "third", label: `Tercera (${tallies.third})` });
+  if (tallies.gk) kit.push({ value: "gk", label: `Portero (${tallies.gk})` });
+
+  const audience = [];
+  if (tallies.women) audience.push({ value: "women", label: `Mujer (${tallies.women})` });
+  if (tallies.kids) audience.push({ value: "kids", label: `Niños (${tallies.kids})` });
+
+  const version = [];
+  if (tallies.player) version.push({ value: "player", label: `Con Player (${tallies.player})` });
+
+  const sleeve = [];
+  if (tallies.long) sleeve.push({ value: "long", label: `Manga larga (${tallies.long})` });
+
+  const edition = [];
+  if (tallies.twoStar) edition.push({ value: "2star", label: `2-Star (${tallies.twoStar})` });
+  if (tallies.worldCup) edition.push({ value: "worldcup", label: `World Cup (${tallies.worldCup})` });
+  if (tallies.retro) edition.push({ value: "retro", label: `Retro (${tallies.retro})` });
+
+  return { kit, audience, version, sleeve, edition };
+}
+
+function bindYupooShirtFilters() {
+  document.querySelectorAll("[data-yupoo-filter]").forEach((sel) => {
+    sel.addEventListener("change", () => {
+      const key = sel.dataset.yupooFilter;
+      if (!key || !(key in yupooShirtFilters)) return;
+      yupooShirtFilters[key] = sel.value || "ALL";
+      yupooPage = 1;
+      renderYupooProductsGrid();
+    });
+  });
+  document.querySelector("[data-yupoo-filters-reset]")?.addEventListener("click", () => {
+    resetYupooShirtFilters();
+    yupooPage = 1;
+    renderYupooProductsGrid();
+  });
+}
+
+function renderYupooTeamNav(filterOptions) {
+  const team = getSelectedYupooTeam();
+  if (!team && !catalogSearch.trim()) {
+    setYupooNav(`<p class="yupoo-nav-hint muted small">Elige un equipo o selección para ver sus camisas. La búsqueda también funciona por nombre (Spain, España, Real Madrid…).</p>`);
+    return;
+  }
+  if (team) {
+    const f = yupooShirtFilters;
+    const hasActive = Object.values(f).some((v) => v !== "ALL");
+    const filtersHtml = filterOptions
+      ? `<div class="yupoo-filters">
+          ${yupooFilterSelect("yupoo-filter-kit", "Kit", f.kit, filterOptions.kit)}
+          ${yupooFilterSelect("yupoo-filter-audience", "Público", f.audience, filterOptions.audience)}
+          ${yupooFilterSelect("yupoo-filter-version", "Versión", f.version, filterOptions.version)}
+          ${yupooFilterSelect("yupoo-filter-sleeve", "Manga", f.sleeve, filterOptions.sleeve)}
+          ${yupooFilterSelect("yupoo-filter-edition", "Edición", f.edition, filterOptions.edition)}
+          ${hasActive ? `<button type="button" class="btn btn-ghost yupoo-filters-reset" data-yupoo-filters-reset>Limpiar filtros</button>` : ""}
+        </div>`
+      : "";
+    setYupooNav(`
+      <div class="yupoo-nav-top">
+        <button type="button" class="btn btn-ghost yupoo-nav-back" data-yupoo-back>← Equipos</button>
+        <div class="yupoo-nav-current">
+          <strong>${escapeHtml(team.name)}</strong>
+        </div>
+      </div>
+      ${filtersHtml}`);
+    document.querySelector("[data-yupoo-back]")?.addEventListener("click", () => {
+      catalogSearch = "";
+      const searchEl = document.getElementById("catalog-search");
+      if (searchEl) searchEl.value = "";
+      resetYupooShirtFilters();
+      clearYupooTeam();
+    });
+    if (filterOptions) bindYupooShirtFilters();
+    return;
+  }
+  setYupooNav(`
+    <div class="yupoo-nav-top">
+      <button type="button" class="btn btn-ghost yupoo-nav-back" data-yupoo-back>← Equipos</button>
+      <div class="yupoo-nav-current"><strong>Resultados de búsqueda</strong></div>
+    </div>`);
+  document.querySelector("[data-yupoo-back]")?.addEventListener("click", () => {
+    catalogSearch = "";
+    const searchEl = document.getElementById("catalog-search");
+    if (searchEl) searchEl.value = "";
+    clearYupooTeam();
+  });
+}
+
+async function renderYupooTeamsGrid() {
+  const grid = document.getElementById("grid");
+  const countEl = document.getElementById("count");
+  const token = ++yupooLoadToken;
+  grid.innerHTML = `<p class="catalog-empty muted">Cargando equipos…</p>`;
+  setYupooPager("");
+  renderYupooTeamNav();
+
+  try {
+    const [teams] = await Promise.all([loadYupooTeams(), loadYupooMeta()]);
+    if (token !== yupooLoadToken || !isYupooMode()) return;
+
+    const q = catalogSearch.trim();
+    let list = teams.slice();
+    if (q) {
+      // "españa 2-star" → entrar en España con esa búsqueda
+      const teamHit = matchTeamFromSearchQuery(q, teams);
+      if (teamHit) {
+        yupooSelectedTeamId = teamHit.id;
+        return renderYupooProductsGrid(token);
+      }
+      list = list.filter((t) => matchesYupooSearch([t.name, ...(t.aliases || [])].join(" "), q));
+    }
+
+    // Si la búsqueda no pega con nombres de equipo, caer a resultados de camisas
+    if (q && list.length === 0) {
+      return renderYupooProductsGrid(token);
+    }
+
+    if (!q && yupooUnmatchedCount > 0) {
+      list = [...list, {
+        id: YUPOO_TEAM_OTHER,
+        name: "Otros modelos",
+        count: yupooUnmatchedCount,
+        thumb: "",
+        aliases: [],
+      }];
+    }
+
+    if (countEl) countEl.textContent = String(list.length);
+    if (list.length === 0) {
+      grid.innerHTML = `<p class="catalog-empty muted">No hay equipos que coincidan.</p>`;
+      return;
+    }
+
+    grid.innerHTML = list.map((t, i) => yupooTeamCardHTML(t, i)).join("");
+    grid.querySelectorAll(".card").forEach((el) => {
+      el.classList.add("reveal");
+      initTilt(el);
+    });
+    observeReveals(grid.querySelectorAll(".reveal"));
+    bindYupooTeamCards(grid);
+  } catch (err) {
+    if (token !== yupooLoadToken || !isYupooMode()) return;
+    console.warn("yupoo teams", err);
+    if (countEl) countEl.textContent = "0";
+    grid.innerHTML = `<p class="catalog-empty muted">No se pudieron cargar los equipos. Ejecuta <code>npm run sync-yupoo -- --regroup-only</code>.</p>`;
+  }
+}
+
+async function renderYupooProductsGrid(existingToken) {
   const grid = document.getElementById("grid");
   if (!grid) return;
   const countEl = document.getElementById("count");
-  const token = ++yupooLoadToken;
+  const token = existingToken || ++yupooLoadToken;
 
-  grid.innerHTML = `<p class="catalog-empty muted">Cargando catálogo completo…</p>`;
-  setYupooPager("");
+  if (!existingToken) {
+    grid.innerHTML = `<p class="catalog-empty muted">Cargando camisas…</p>`;
+    setYupooPager("");
+  }
 
   try {
     const meta = await loadYupooMeta();
     if (token !== yupooLoadToken || !isYupooMode()) return;
 
-    const q = catalogSearch.trim().toLowerCase();
-    let items = [];
-    let total = meta.total || 0;
-    let totalPages = meta.pages || 1;
-
-    if (q) {
-      const index = await loadYupooSearchIndex();
-      if (token !== yupooLoadToken || !isYupooMode()) return;
-      const matchedIds = index
-        .filter((row) => row.title && row.title.toLowerCase().includes(q))
-        .map((row) => row.id);
-      total = matchedIds.length;
-      totalPages = Math.max(1, Math.ceil(total / (meta.pageSize || 100)));
-      if (yupooPage > totalPages) yupooPage = totalPages;
-      if (yupooPage < 1) yupooPage = 1;
-      const pageSize = meta.pageSize || 100;
-      const start = (yupooPage - 1) * pageSize;
-      const pageIds = matchedIds.slice(start, start + pageSize);
-      items = await hydrateYupooIds(pageIds);
-    } else {
-      if (yupooPage > totalPages) yupooPage = totalPages;
-      if (yupooPage < 1) yupooPage = 1;
-      items = await loadYupooPage(yupooPage);
-    }
-
+    const q = catalogSearch.trim();
+    const pageSize = meta.pageSize || 100;
+    const index = await loadYupooSearchIndex();
     if (token !== yupooLoadToken || !isYupooMode()) return;
 
+    let teamRows = index;
+    if (yupooSelectedTeamId === YUPOO_TEAM_OTHER) {
+      teamRows = teamRows.filter((row) => !row.teamId);
+    } else if (yupooSelectedTeamId) {
+      teamRows = teamRows.filter((row) => row.teamId === yupooSelectedTeamId);
+    }
+    if (q) {
+      teamRows = teamRows.filter((row) =>
+        matchesYupooSearch([row.haystack || "", row.title || "", row.teamId || ""].join(" "), q)
+      );
+    }
+
+    const filterOptions = yupooSelectedTeamId ? buildYupooShirtFilterOptions(teamRows) : null;
+    renderYupooTeamNav(filterOptions);
+
+    const matched = teamRows.filter(matchesYupooShirtFilters);
+    const total = matched.length;
+    let totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (yupooPage > totalPages) yupooPage = totalPages;
+    if (yupooPage < 1) yupooPage = 1;
+    const start = (yupooPage - 1) * pageSize;
+    const pageIds = matched.slice(start, start + pageSize).map((row) => row.id);
+    const items = await hydrateYupooIds(pageIds);
+
+    if (token !== yupooLoadToken || !isYupooMode()) return;
     if (countEl) countEl.textContent = String(total);
 
     if (items.length === 0) {
-      grid.innerHTML = `<p class="catalog-empty muted">${q ? "No hay coincidencias en el catálogo completo." : "El catálogo completo aún no está sincronizado. Ejecuta npm run sync-yupoo."}</p>`;
+      grid.innerHTML = `<p class="catalog-empty muted">${q || Object.values(yupooShirtFilters).some((v) => v !== "ALL") ? "No hay coincidencias con estos filtros." : "No hay camisas para este equipo."}</p>`;
       setYupooPager("");
       return;
     }
@@ -1125,11 +1624,24 @@ async function renderYupooGrid() {
     bindYupooPager(totalPages);
   } catch (err) {
     if (token !== yupooLoadToken || !isYupooMode()) return;
-    console.warn("yupoo grid", err);
+    console.warn("yupoo products", err);
     if (countEl) countEl.textContent = "0";
-    grid.innerHTML = `<p class="catalog-empty muted">No se pudo cargar el catálogo completo. Genera los datos con <code>npm run sync-yupoo</code> y vuelve a intentar.</p>`;
+    grid.innerHTML = `<p class="catalog-empty muted">No se pudo cargar el catálogo completo. Genera los datos con <code>npm run sync-yupoo</code>.</p>`;
     setYupooPager("");
   }
+}
+
+async function renderYupooGrid() {
+  const grid = document.getElementById("grid");
+  if (!grid) return;
+
+  // Vista equipos (sin equipo seleccionado). Si hay búsqueda de equipo, filtra tarjetas;
+  // si no hay match de equipo, renderYupooTeamsGrid cae a productos.
+  if (!yupooSelectedTeamId) {
+    await renderYupooTeamsGrid();
+    return;
+  }
+  await renderYupooProductsGrid();
 }
 
 function bindCuratedCards(grid) {
@@ -1212,6 +1724,7 @@ function renderGrid() {
 
   yupooLoadToken += 1;
   setYupooPager("");
+  setYupooNav("");
 
   const shirts = getListForGrid();
   const yupooFavs = activeFilter === "FAVORITOS" ? getYupooFavoriteItems() : [];

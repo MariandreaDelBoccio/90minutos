@@ -1,9 +1,10 @@
 {
-  "total": 15941,
+  "total": 13466,
+  "albumTotal": 15941,
   "pageSize": 100,
-  "pages": 160,
-  "syncedAt": "2026-07-29T21:16:49.268Z",
+  "pages": 135,
+  "syncedAt": "2026-07-29T21:58:39.563Z",
   "source": "https://pinhuistore.x.yupoo.com/albums?tab=gallery",
-  "remotePagesFetched": 133,
-  "remotePagesTotal": 133
+  "grouped": true,
+  "teams": 158
 }
