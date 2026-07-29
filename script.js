@@ -512,8 +512,8 @@ async function loadYupooCuration() {
           aliases: typeof t?.aliases === "string"
             ? t.aliases.split(",").map((a) => a.trim().toLowerCase()).filter(Boolean)
             : (Array.isArray(t?.aliases) ? t.aliases.map((a) => String(a).toLowerCase()) : []),
-          hidden: t?.hidden === true,
-          featured: t?.featured === true,
+          hidden: t?.hidden === true || t?.hidden === "true" || t?.hidden === "yes",
+          featured: t?.featured === true || t?.featured === "true" || t?.featured === "yes",
           sortOrder: Number(t?.sortOrder) || i + 1,
         }))
       : [];

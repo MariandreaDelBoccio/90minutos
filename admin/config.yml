@@ -101,8 +101,21 @@ collections:
               - { name: "id", label: "ID", widget: "string", hint: "Sin espacios. Ejemplo: spain, real-madrid" }
               - { name: "name", label: "Nombre visible", widget: "string", hint: "Ejemplo: Espana" }
               - { name: "aliases", label: "Aliases (separados por coma)", widget: "string", hint: "Ejemplo: spain, espana, spanish national" }
-              - { name: "hidden", label: "Ocultar equipo", widget: "boolean", default: false, required: false }
-              - { name: "featured", label: "Destacar en la lista", widget: "boolean", default: false, required: false }
+              - name: "hidden"
+                label: "Visibilidad"
+                widget: "select"
+                default: "false"
+                options:
+                  - { label: "Visible", value: "false" }
+                  - { label: "Oculto", value: "true" }
+                hint: "Usa este desplegable (no el toggle antiguo) para que Publicar detecte el cambio."
+              - name: "featured"
+                label: "Destacado"
+                widget: "select"
+                default: "false"
+                options:
+                  - { label: "Normal", value: "false" }
+                  - { label: "Destacado", value: "true" }
               - { name: "sortOrder", label: "Orden", widget: "number", value_type: "int", required: false, default: 100, hint: "Menor = aparece antes." }
           - name: "hideTitleContains"
             label: "Ocultar si el titulo contiene"

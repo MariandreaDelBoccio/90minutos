@@ -4,1304 +4,1304 @@
       "id": "spain",
       "name": "España",
       "aliases": "spain, españa, espana, spanish national",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 1
     },
     {
       "id": "brazil",
       "name": "Brasil",
       "aliases": "brazil, brasil",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 2
     },
     {
       "id": "argentina",
       "name": "Argentina",
       "aliases": "argentina",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 3
     },
     {
       "id": "portugal",
       "name": "Portugal",
       "aliases": "portugal",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 4
     },
     {
       "id": "france",
       "name": "Francia",
       "aliases": "france, francia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 5
     },
     {
       "id": "germany",
       "name": "Alemania",
       "aliases": "germany, alemania, deutschland",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 6
     },
     {
       "id": "italy",
       "name": "Italia",
       "aliases": "italy, italia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 7
     },
     {
       "id": "england",
       "name": "Inglaterra",
       "aliases": "england, inglaterra",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 8
     },
     {
       "id": "netherlands",
       "name": "Países Bajos",
       "aliases": "netherlands, holland, holanda",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 9
     },
     {
       "id": "belgium",
       "name": "Bélgica",
       "aliases": "belgium, belgica, bélgica",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 10
     },
     {
       "id": "croatia",
       "name": "Croacia",
       "aliases": "croatia, croacia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 11
     },
     {
       "id": "uruguay",
       "name": "Uruguay",
       "aliases": "uruguay",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 12
     },
     {
       "id": "colombia",
       "name": "Colombia",
       "aliases": "colombia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 13
     },
     {
       "id": "mexico",
       "name": "México",
       "aliases": "mexico, méxico",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 14
     },
     {
       "id": "usa",
       "name": "Estados Unidos",
       "aliases": "usa, united states, estados unidos, usmnt",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 15
     },
     {
       "id": "japan",
       "name": "Japón",
       "aliases": "japan, japón, japon",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 16
     },
     {
       "id": "korea",
       "name": "Corea del Sur",
       "aliases": "south korea, korea, corea",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 17
     },
     {
       "id": "australia",
       "name": "Australia",
       "aliases": "australia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 18
     },
     {
       "id": "morocco",
       "name": "Marruecos",
       "aliases": "morocco, marruecos",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 19
     },
     {
       "id": "senegal",
       "name": "Senegal",
       "aliases": "senegal",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 20
     },
     {
       "id": "nigeria",
       "name": "Nigeria",
       "aliases": "nigeria",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 21
     },
     {
       "id": "ghana",
       "name": "Ghana",
       "aliases": "ghana",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 22
     },
     {
       "id": "egypt",
       "name": "Egipto",
       "aliases": "egypt, egipto",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 23
     },
     {
       "id": "canada",
       "name": "Canadá",
       "aliases": "canada, canadá",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 24
     },
     {
       "id": "chile",
       "name": "Chile",
       "aliases": "chile",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 25
     },
     {
       "id": "peru",
       "name": "Perú",
       "aliases": "peru, perú",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 26
     },
     {
       "id": "ecuador",
       "name": "Ecuador",
       "aliases": "ecuador",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 27
     },
     {
       "id": "venezuela",
       "name": "Venezuela",
       "aliases": "venezuela",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 28
     },
     {
       "id": "turkey",
       "name": "Turquía",
       "aliases": "turkey, turquia, türkiye, turkiye",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 29
     },
     {
       "id": "switzerland",
       "name": "Suiza",
       "aliases": "switzerland, suiza",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 30
     },
     {
       "id": "austria",
       "name": "Austria",
       "aliases": "austria",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 31
     },
     {
       "id": "poland",
       "name": "Polonia",
       "aliases": "poland, polonia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 32
     },
     {
       "id": "sweden",
       "name": "Suecia",
       "aliases": "sweden, suecia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 33
     },
     {
       "id": "denmark",
       "name": "Dinamarca",
       "aliases": "denmark, dinamarca",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 34
     },
     {
       "id": "norway",
       "name": "Noruega",
       "aliases": "norway, noruega",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 35
     },
     {
       "id": "scotland",
       "name": "Escocia",
       "aliases": "scotland, escocia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 36
     },
     {
       "id": "wales",
       "name": "Gales",
       "aliases": "wales, gales",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 37
     },
     {
       "id": "ireland",
       "name": "Irlanda",
       "aliases": "ireland, irlanda, republic of ireland",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 38
     },
     {
       "id": "czech",
       "name": "República Checa",
       "aliases": "czech republic, czech, chequia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 39
     },
     {
       "id": "serbia",
       "name": "Serbia",
       "aliases": "serbia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 40
     },
     {
       "id": "ukraine",
       "name": "Ucrania",
       "aliases": "ukraine, ucrania",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 41
     },
     {
       "id": "saudi",
       "name": "Arabia Saudí",
       "aliases": "saudi arabia, saudi, arabia saud",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 42
     },
     {
       "id": "qatar",
       "name": "Catar",
       "aliases": "qatar, catar",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 43
     },
     {
       "id": "ivory-coast",
       "name": "Costa de Marfil",
       "aliases": "ivory coast, cote d'ivoire, costa de marfil",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 44
     },
     {
       "id": "cameroon",
       "name": "Camerún",
       "aliases": "cameroon, camerun, camerún",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 45
     },
     {
       "id": "algeria",
       "name": "Argelia",
       "aliases": "algeria, argelia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 46
     },
     {
       "id": "tunisia",
       "name": "Túnez",
       "aliases": "tunisia, tunez, túnez",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 47
     },
     {
       "id": "iran",
       "name": "Irán",
       "aliases": "iran, irán",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 48
     },
     {
       "id": "china",
       "name": "China",
       "aliases": "china",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 49
     },
     {
       "id": "honduras",
       "name": "Honduras",
       "aliases": "honduras",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 50
     },
     {
       "id": "panama",
       "name": "Panamá",
       "aliases": "panama, panamá",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 51
     },
     {
       "id": "costa-rica",
       "name": "Costa Rica",
       "aliases": "costa rica",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 52
     },
     {
       "id": "jamaica",
       "name": "Jamaica",
       "aliases": "jamaica",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 53
     },
     {
       "id": "new-zealand",
       "name": "Nueva Zelanda",
       "aliases": "new zealand, nueva zelanda",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 54
     },
     {
       "id": "real-madrid",
       "name": "Real Madrid",
       "aliases": "real madrid",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 55
     },
     {
       "id": "barcelona",
       "name": "FC Barcelona",
       "aliases": "fc barcelona, barcelona, barça, barca",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 56
     },
     {
       "id": "atletico",
       "name": "Atlético Madrid",
       "aliases": "atletico madrid, atlético madrid, atletico de madrid, atlético de madrid",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 57
     },
     {
       "id": "sevilla",
       "name": "Sevilla",
       "aliases": "sevilla fc, sevilla, seville",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 58
     },
     {
       "id": "valencia",
       "name": "Valencia",
       "aliases": "valencia cf, valencia",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 59
     },
     {
       "id": "athletic",
       "name": "Athletic Club",
       "aliases": "athletic bilbao, athletic club, athletic",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 60
     },
     {
       "id": "real-sociedad",
       "name": "Real Sociedad",
       "aliases": "real sociedad",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 61
     },
     {
       "id": "villarreal",
       "name": "Villarreal",
       "aliases": "villarreal",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 62
     },
     {
       "id": "betis",
       "name": "Real Betis",
       "aliases": "real betis, betis",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 63
     },
     {
       "id": "osasuna",
       "name": "Osasuna",
       "aliases": "osasuna",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 64
     },
     {
       "id": "celta",
       "name": "Celta de Vigo",
       "aliases": "celta vigo, celta de vigo, celta",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 65
     },
     {
       "id": "getafe",
       "name": "Getafe",
       "aliases": "getafe",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 66
     },
     {
       "id": "mallorca",
       "name": "Mallorca",
       "aliases": "mallorca, rcd mallorca",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 67
     },
     {
       "id": "girona",
       "name": "Girona",
       "aliases": "girona",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 68
     },
     {
       "id": "espanyol",
       "name": "Espanyol",
       "aliases": "espanyol, rcd espanyol",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 69
     },
     {
       "id": "las-palmas",
       "name": "Las Palmas",
       "aliases": "las palmas",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 70
     },
     {
       "id": "cadiz",
       "name": "Cádiz",
       "aliases": "cadiz, cádiz",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 71
     },
     {
       "id": "alaves",
       "name": "Alavés",
       "aliases": "alaves, alavés, deportivo alaves",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 72
     },
     {
       "id": "leganes",
       "name": "Leganés",
       "aliases": "leganes, leganés",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 73
     },
     {
       "id": "rayo",
       "name": "Rayo Vallecano",
       "aliases": "rayo vallecano, rayo",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 74
     },
     {
       "id": "man-united",
       "name": "Manchester United",
       "aliases": "manchester united, man united, man utd",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 75
     },
     {
       "id": "man-city",
       "name": "Manchester City",
       "aliases": "manchester city, man city",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 76
     },
     {
       "id": "liverpool",
       "name": "Liverpool",
       "aliases": "liverpool",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 77
     },
     {
       "id": "chelsea",
       "name": "Chelsea",
       "aliases": "chelsea",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 78
     },
     {
       "id": "arsenal",
       "name": "Arsenal",
       "aliases": "arsenal",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 79
     },
     {
       "id": "tottenham",
       "name": "Tottenham",
       "aliases": "tottenham, spurs",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 80
     },
     {
       "id": "newcastle",
       "name": "Newcastle",
       "aliases": "newcastle united, newcastle",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 81
     },
     {
       "id": "aston-villa",
       "name": "Aston Villa",
       "aliases": "aston villa",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 82
     },
     {
       "id": "west-ham",
       "name": "West Ham",
       "aliases": "west ham",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 83
     },
     {
       "id": "brighton",
       "name": "Brighton",
       "aliases": "brighton",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 84
     },
     {
       "id": "everton",
       "name": "Everton",
       "aliases": "everton",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 85
     },
     {
       "id": "wolves",
       "name": "Wolverhampton",
       "aliases": "wolverhampton, wolves",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 86
     },
     {
       "id": "crystal-palace",
       "name": "Crystal Palace",
       "aliases": "crystal palace",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 87
     },
     {
       "id": "fulham",
       "name": "Fulham",
       "aliases": "fulham",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 88
     },
     {
       "id": "brentford",
       "name": "Brentford",
       "aliases": "brentford",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 89
     },
     {
       "id": "nottingham",
       "name": "Nottingham Forest",
       "aliases": "nottingham forest, nottingham",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 90
     },
     {
       "id": "bournemouth",
       "name": "Bournemouth",
       "aliases": "bournemouth",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 91
     },
     {
       "id": "leicester",
       "name": "Leicester",
       "aliases": "leicester city, leicester",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 92
     },
     {
       "id": "leeds",
       "name": "Leeds United",
       "aliases": "leeds united, leeds",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 93
     },
     {
       "id": "southampton",
       "name": "Southampton",
       "aliases": "southampton",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 94
     },
     {
       "id": "ipswich",
       "name": "Ipswich Town",
       "aliases": "ipswich",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 95
     },
     {
       "id": "juventus",
       "name": "Juventus",
       "aliases": "juventus, juve",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 96
     },
     {
       "id": "inter",
       "name": "Inter de Milán",
       "aliases": "inter milan, inter de milan, internazionale, inter",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 97
     },
     {
       "id": "ac-milan",
       "name": "AC Milan",
       "aliases": "ac milan, a.c. milan",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 98
     },
     {
       "id": "napoli",
       "name": "Napoli",
       "aliases": "ssc napoli, ssc napol, napoli",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 99
     },
     {
       "id": "roma",
       "name": "AS Roma",
       "aliases": "as roma, roma",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 100
     },
     {
       "id": "lazio",
       "name": "Lazio",
       "aliases": "lazio",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 101
     },
     {
       "id": "fiorentina",
       "name": "Fiorentina",
       "aliases": "fiorentina, florence",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 102
     },
     {
       "id": "atalanta",
       "name": "Atalanta",
       "aliases": "atalanta",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 103
     },
     {
       "id": "torino",
       "name": "Torino",
       "aliases": "torino",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 104
     },
     {
       "id": "bologna",
       "name": "Bologna",
       "aliases": "bologna",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 105
     },
     {
       "id": "bayern",
       "name": "Bayern Múnich",
       "aliases": "bayern munich, bayern múnich, bayern munchen, fc bayern, bayern",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 106
     },
     {
       "id": "dortmund",
       "name": "Borussia Dortmund",
       "aliases": "borussia dortmund, dortmund, bvb",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 107
     },
     {
       "id": "leverkusen",
       "name": "Bayer Leverkusen",
       "aliases": "bayer leverkusen, leverkusen",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 108
     },
     {
       "id": "leipzig",
       "name": "RB Leipzig",
       "aliases": "rb leipzig, leipzig",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 109
     },
     {
       "id": "frankfurt",
       "name": "Eintracht Frankfurt",
       "aliases": "eintracht frankfurt, frankfurt",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 110
     },
     {
       "id": "gladbach",
       "name": "Borussia M'gladbach",
       "aliases": "monchengladbach, mönchengladbach, gladbach",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 111
     },
     {
       "id": "wolfsburg",
       "name": "Wolfsburg",
       "aliases": "wolfsburg, vfl wolfsburg",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 112
     },
     {
       "id": "st-pauli",
       "name": "FC St. Pauli",
       "aliases": "st. pauli, st pauli, fc st. pauli",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 113
     },
     {
       "id": "psg",
       "name": "PSG",
       "aliases": "paris saint-germain, paris saint germain, paris saint, psg",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 114
     },
     {
       "id": "marseille",
       "name": "Olympique Marsella",
       "aliases": "olympique marseille, marseille, marsella",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 115
     },
     {
       "id": "lyon",
       "name": "Olympique Lyon",
       "aliases": "olympique lyon, lyon, ol lyon",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 116
     },
     {
       "id": "monaco",
       "name": "AS Monaco",
       "aliases": "as monaco, monaco",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 117
     },
     {
       "id": "lille",
       "name": "Lille",
       "aliases": "lille",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 118
     },
     {
       "id": "nice",
       "name": "Nice",
       "aliases": "ogc nice, nice",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 119
     },
     {
       "id": "benfica",
       "name": "Benfica",
       "aliases": "benfica, sl benfica",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 120
     },
     {
       "id": "porto",
       "name": "FC Porto",
       "aliases": "fc porto, porto",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 121
     },
     {
       "id": "sporting",
       "name": "Sporting CP",
       "aliases": "sporting lisbon, sporting lisboa, sporting cp, sporting",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 122
     },
     {
       "id": "ajax",
       "name": "Ajax",
       "aliases": "ajax",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 123
     },
     {
       "id": "psv",
       "name": "PSV",
       "aliases": "psv eindhoven, psv",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 124
     },
     {
       "id": "feyenoord",
       "name": "Feyenoord",
       "aliases": "feyenoord",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 125
     },
     {
       "id": "inter-miami",
       "name": "Inter Miami",
       "aliases": "inter miami",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 126
     },
     {
       "id": "lafc",
       "name": "LAFC",
       "aliases": "lafc, los angeles fc",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 127
     },
     {
       "id": "lagalaxy",
       "name": "LA Galaxy",
       "aliases": "la galaxy, los angeles galaxy",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 128
     },
     {
       "id": "nycfc",
       "name": "New York City FC",
       "aliases": "new york city fc, nycfc",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 129
     },
     {
       "id": "nyredbulls",
       "name": "New York Red Bulls",
       "aliases": "new york red bulls",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 130
     },
     {
       "id": "atlanta-united",
       "name": "Atlanta United",
       "aliases": "atlanta united",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 131
     },
     {
       "id": "seattle",
       "name": "Seattle Sounders",
       "aliases": "seattle sounders",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 132
     },
     {
       "id": "chivas",
       "name": "Chivas",
       "aliases": "chivas, guadalajara, cd guadalajara",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 133
     },
     {
       "id": "america-mx",
       "name": "Club América",
       "aliases": "club america, america mexico, américa",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 134
     },
     {
       "id": "monterrey",
       "name": "Monterrey",
       "aliases": "monterrey, rayados",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 135
     },
     {
       "id": "tigres",
       "name": "Tigres",
       "aliases": "tigres uanl, tigres",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 136
     },
     {
       "id": "flamengo",
       "name": "Flamengo",
       "aliases": "flamengo",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 137
     },
     {
       "id": "palmeiras",
       "name": "Palmeiras",
       "aliases": "palmeiras",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 138
     },
     {
       "id": "santos",
       "name": "Santos",
       "aliases": "santos fc, santos",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 139
     },
     {
       "id": "corinthians",
       "name": "Corinthians",
       "aliases": "corinthians",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 140
     },
     {
       "id": "sao-paulo",
       "name": "São Paulo",
       "aliases": "sao paulo, são paulo",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 141
     },
     {
       "id": "gremio",
       "name": "Grêmio",
       "aliases": "gremio, grêmio",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 142
     },
     {
       "id": "internacional",
       "name": "Internacional",
       "aliases": "internacional, s.c internacional, sc internacional",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 143
     },
     {
       "id": "cruzeiro",
       "name": "Cruzeiro",
       "aliases": "cruzeiro",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 144
     },
     {
       "id": "botafogo",
       "name": "Botafogo",
       "aliases": "botafogo",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 145
     },
     {
       "id": "vasco",
       "name": "Vasco da Gama",
       "aliases": "vasco da gama, vasco",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 146
     },
     {
       "id": "fluminense",
       "name": "Fluminense",
       "aliases": "fluminense",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 147
     },
     {
       "id": "atletico-mg",
       "name": "Atlético Mineiro",
       "aliases": "atletico mineiro, atlético mineiro, atletico mg",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 148
     },
     {
       "id": "river",
       "name": "River Plate",
       "aliases": "river plate",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 149
     },
     {
       "id": "boca",
       "name": "Boca Juniors",
       "aliases": "boca juniors, boca",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 150
     },
     {
       "id": "racing",
       "name": "Racing Club",
       "aliases": "racing club, racing",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 151
     },
     {
       "id": "independiente",
       "name": "Independiente",
       "aliases": "independiente",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 152
     },
     {
       "id": "san-lorenzo",
       "name": "San Lorenzo",
       "aliases": "san lorenzo",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 153
     },
     {
       "id": "galatasaray",
       "name": "Galatasaray",
       "aliases": "galatasaray",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 154
     },
     {
       "id": "fenerbahce",
       "name": "Fenerbahçe",
       "aliases": "fenerbahce, fenerbahçe",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 155
     },
     {
       "id": "besiktas",
       "name": "Beşiktaş",
       "aliases": "besiktas, beşiktaş",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 156
     },
     {
       "id": "olympiacos",
       "name": "Olympiacos",
       "aliases": "olympiacos, olympiakos",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 157
     },
     {
       "id": "celtic",
       "name": "Celtic",
       "aliases": "celtic",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 158
     },
     {
       "id": "rangers",
       "name": "Rangers",
       "aliases": "rangers fc, glasgow rangers, rangers",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 159
     },
     {
       "id": "al-nassr",
       "name": "Al Nassr",
       "aliases": "al nassr, alnassr",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 160
     },
     {
       "id": "al-hilal",
       "name": "Al Hilal",
       "aliases": "al hilal, alhilal",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 161
     },
     {
       "id": "al-ahli",
       "name": "Al Ahli",
       "aliases": "al ahli",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 162
     },
     {
       "id": "al-ittihad",
       "name": "Al Ittihad",
       "aliases": "al ittihad",
-      "hidden": false,
-      "featured": false,
+      "hidden": "false",
+      "featured": "false",
       "sortOrder": 163
     }
   ],

@@ -30,14 +30,18 @@ function parseAliases(raw) {
   return [];
 }
 
+function asBool(raw) {
+  return raw === true || raw === "true" || raw === "yes" || raw === 1 || raw === "1";
+}
+
 export function normalizeCurationTeam(raw, index = 0) {
   const id = String(raw?.id || "").trim() || `team-${index + 1}`;
   return {
     id,
     name: String(raw?.name || id).trim() || id,
     aliases: parseAliases(raw?.aliases),
-    hidden: raw?.hidden === true,
-    featured: raw?.featured === true,
+    hidden: asBool(raw?.hidden),
+    featured: asBool(raw?.featured),
     sortOrder: Number.isFinite(Number(raw?.sortOrder)) ? Number(raw.sortOrder) : index + 1,
   };
 }
