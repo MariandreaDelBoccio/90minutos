@@ -131,9 +131,11 @@ let activeFilter = FILTER_DISPONIBLES;
 
 /** @type {{ total: number, pageSize: number, pages: number, syncedAt?: string } | null} */
 let yupooMeta = null;
+/** Cache-bust de assets Yupoo (syncedAt de meta.json) */
+let yupooCacheBust = "";
 /** @type {Map<number, Array<{id:string,title:string,thumb:string,url:string,photoCount:number}>>} */
 const yupooPageCache = new Map();
-/** @type {Array<{id:string,title:string}> | null} */
+/** @type {Array<{id:string,title:string,teamId?:string|null,haystack?:string}> | null} */
 let yupooSearchIndex = null;
 /** @type {Record<string, number> | null} */
 let yupooIdToPage = null;
@@ -411,17 +413,35 @@ function yupooProxiedThumb(url) {
   }
 }
 
+function yupooAssetUrl(path) {
+  const base = String(path || "");
+  if (!yupooCacheBust) return base;
+  return `${base}${base.includes("?") ? "&" : "?"}v=${yupooCacheBust}`;
+}
+
+function invalidateYupooCaches() {
+  yupooSearchIndex = null;
+  yupooIdToPage = null;
+  yupooTeams = null;
+  yupooUnmatchedCount = 0;
+  yupooPageCache.clear();
+  yupooItemById.clear();
+}
+
 async function loadYupooMeta() {
   if (yupooMeta) return yupooMeta;
   const res = await fetch(YUPOO_META_URL, { cache: "no-store" });
   if (!res.ok) throw new Error("yupoo-meta");
-  yupooMeta = await res.json();
+  const data = await res.json();
+  yupooMeta = data;
+  yupooCacheBust = encodeURIComponent(String(data?.syncedAt || data?.pages || "1"));
   return yupooMeta;
 }
 
 async function loadYupooPage(n) {
+  await loadYupooMeta();
   if (yupooPageCache.has(n)) return yupooPageCache.get(n);
-  const res = await fetch(YUPOO_PAGE_URL(n), { cache: "force-cache" });
+  const res = await fetch(yupooAssetUrl(YUPOO_PAGE_URL(n)), { cache: "force-cache" });
   if (!res.ok) throw new Error(`yupoo-page-${n}`);
   const list = await res.json();
   const items = Array.isArray(list) ? list : [];
@@ -431,8 +451,9 @@ async function loadYupooPage(n) {
 }
 
 async function loadYupooSearchIndex() {
+  await loadYupooMeta();
   if (yupooSearchIndex) return yupooSearchIndex;
-  const res = await fetch(YUPOO_SEARCH_URL, { cache: "force-cache" });
+  const res = await fetch(yupooAssetUrl(YUPOO_SEARCH_URL), { cache: "force-cache" });
   if (!res.ok) throw new Error("yupoo-search");
   const list = await res.json();
   yupooSearchIndex = Array.isArray(list) ? list : [];
@@ -440,16 +461,18 @@ async function loadYupooSearchIndex() {
 }
 
 async function loadYupooIdMap() {
+  await loadYupooMeta();
   if (yupooIdToPage) return yupooIdToPage;
-  const res = await fetch(YUPOO_ID_MAP_URL, { cache: "force-cache" });
+  const res = await fetch(yupooAssetUrl(YUPOO_ID_MAP_URL), { cache: "force-cache" });
   if (!res.ok) throw new Error("yupoo-idmap");
   yupooIdToPage = await res.json();
   return yupooIdToPage;
 }
 
 async function loadYupooTeams() {
+  await loadYupooMeta();
   if (yupooTeams) return yupooTeams;
-  const res = await fetch(YUPOO_TEAMS_URL, { cache: "force-cache" });
+  const res = await fetch(yupooAssetUrl(YUPOO_TEAMS_URL), { cache: "force-cache" });
   if (!res.ok) throw new Error("yupoo-teams");
   const data = await res.json();
   yupooTeams = Array.isArray(data?.teams) ? data.teams : [];
@@ -463,6 +486,27 @@ function getSelectedYupooTeam() {
     return { id: YUPOO_TEAM_OTHER, name: "Otros modelos", count: 0, thumb: "", aliases: [] };
   }
   return (yupooTeams || []).find((t) => t.id === yupooSelectedTeamId) || null;
+}
+
+/** Filtra el índice por equipo; si el índice viejo no trae teamId, usa aliases. */
+function filterIndexBySelectedTeam(index) {
+  if (!yupooSelectedTeamId) return index;
+  if (yupooSelectedTeamId === YUPOO_TEAM_OTHER) {
+    const anyTeamId = index.some((row) => row.teamId);
+    if (!anyTeamId) return [];
+    return index.filter((row) => !row.teamId);
+  }
+
+  const byId = index.filter((row) => row.teamId === yupooSelectedTeamId);
+  if (byId.length) return byId;
+
+  const team = getSelectedYupooTeam();
+  const aliases = team ? [team.name, ...(team.aliases || [])].filter(Boolean) : [];
+  if (!aliases.length) return [];
+  return index.filter((row) => {
+    const text = `${row.haystack || ""} ${row.title || ""}`;
+    return aliases.some((alias) => matchesYupooSearch(text, alias));
+  });
 }
 
 function selectYupooTeam(teamId) {
@@ -1580,12 +1624,7 @@ async function renderYupooProductsGrid(existingToken) {
     const index = await loadYupooSearchIndex();
     if (token !== yupooLoadToken || !isYupooMode()) return;
 
-    let teamRows = index;
-    if (yupooSelectedTeamId === YUPOO_TEAM_OTHER) {
-      teamRows = teamRows.filter((row) => !row.teamId);
-    } else if (yupooSelectedTeamId) {
-      teamRows = teamRows.filter((row) => row.teamId === yupooSelectedTeamId);
-    }
+    let teamRows = filterIndexBySelectedTeam(index);
     if (q) {
       teamRows = teamRows.filter((row) =>
         matchesYupooSearch([row.haystack || "", row.title || "", row.teamId || ""].join(" "), q)
@@ -1602,13 +1641,24 @@ async function renderYupooProductsGrid(existingToken) {
     if (yupooPage < 1) yupooPage = 1;
     const start = (yupooPage - 1) * pageSize;
     const pageIds = matched.slice(start, start + pageSize).map((row) => row.id);
-    const items = await hydrateYupooIds(pageIds);
+    let items = await hydrateYupooIds(pageIds);
+
+    // Si el índice apunta a ids nuevos pero las pages están en caché vieja, reintentar sin caché de página.
+    if (matched.length > 0 && items.length === 0) {
+      yupooPageCache.clear();
+      items = await hydrateYupooIds(pageIds);
+    }
 
     if (token !== yupooLoadToken || !isYupooMode()) return;
     if (countEl) countEl.textContent = String(total);
 
     if (items.length === 0) {
-      grid.innerHTML = `<p class="catalog-empty muted">${q || Object.values(yupooShirtFilters).some((v) => v !== "ALL") ? "No hay coincidencias con estos filtros." : "No hay camisas para este equipo."}</p>`;
+      const hint = matched.length > 0
+        ? "Hay modelos en el índice, pero no se pudieron cargar las fichas. Prueba a recargar sin caché."
+        : (q || Object.values(yupooShirtFilters).some((v) => v !== "ALL")
+          ? "No hay coincidencias con estos filtros."
+          : "No hay camisas para este equipo.");
+      grid.innerHTML = `<p class="catalog-empty muted">${hint}</p>`;
       setYupooPager("");
       return;
     }
