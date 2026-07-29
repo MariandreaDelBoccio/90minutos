@@ -487,8 +487,7 @@ function buildInquiryMessage() {
   const lines = inquiryItems.map((item) => {
     if (item.source === "yupoo" || String(item.id).startsWith("yupoo:")) {
       const title = item.title || getYupooItem(String(item.id).replace(/^yupoo:/, ""))?.title || item.id;
-      const url = item.url || getYupooItem(String(item.id).replace(/^yupoo:/, ""))?.url || "";
-      return `• [Catálogo completo] ${title}${url ? ` · ${url}` : ""}`;
+      return `• [Catálogo completo] ${title}`;
     }
     const s = getShirt(item.id);
     return s ? buildProductLine(s, item.size, item.edition || "fan", item.playerId || "none") : "";
@@ -885,7 +884,7 @@ function yupooCardHTML(item, i) {
   <article class="card card--yupoo${fav ? " card--fav" : ""}" data-yupoo-id="${escapeAttr(item.id)}" style="--d:${(i % 4) * 0.08}s">
     <div class="img">
       ${thumb}
-      <div class="water">YP</div>
+      <div class="water">90MIN</div>
       <div class="top">
         <span></span>
         <button type="button" class="heart${fav ? " is-fav" : ""}" aria-label="Favorito">${heart}</button>
