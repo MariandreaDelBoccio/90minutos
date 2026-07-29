@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "optimize-images": "node scripts/optimize-images.mjs"
+    "dev": "node scripts/dev-server.mjs",
+    "optimize-images": "node scripts/optimize-images.mjs",
+    "sync-yupoo": "node scripts/sync-yupoo.mjs"
   },
   "devDependencies": {
     "sharp": "^0.33.5"

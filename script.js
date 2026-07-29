@@ -4,6 +4,7 @@
 /** Usuario de Instagram (sin @). Cambia por el de la marca. */
 const INSTAGRAM_USER = "90minutos.ss";
 const STORAGE_FAV = "90min-favorites";
+const STORAGE_YUPOO_FAV = "90min-yupoo-fav-meta";
 const STORAGE_INQUIRY = "90min-inquiry";
 
 /** Cotización USD→VES ([DolarApi Venezuela](https://dolarapi.com/docs/venezuela/)) */
@@ -15,6 +16,12 @@ let fxUpdateLabel = "";
 
 // ---------- Data ----------
 const PRODUCTS_URL = "data/productos.json";
+const YUPOO_META_URL = "data/yupoo/meta.json";
+const YUPOO_PAGE_URL = (n) => `data/yupoo/pages/page-${n}.json`;
+const YUPOO_SEARCH_URL = "data/yupoo/search-index.json";
+const YUPOO_ID_MAP_URL = "data/yupoo/id-to-page.json";
+const FILTER_DISPONIBLES = "DISPONIBLES";
+const FILTER_YUPOO = "TODO EL CATÁLOGO";
 
 const P_NONE = { id: "none", name: "Sin jugador", number: "" };
 function pl(...stars) {
@@ -97,7 +104,10 @@ async function loadShirts() {
 
 /** @type {Set<string>} */
 let favoriteIds = new Set();
-/** @type {{ id: string, size: string, edition: "fan"|"player", playerId: string }[]} */
+/** Metadatos de favoritos Yupoo (para poder mostrarlos en FAVORITOS sin tener la página cargada). */
+/** @type {Record<string, {id:string,title:string,thumb:string,url:string,photoCount:number}>} */
+let yupooFavMeta = {};
+/** @type {{ id: string, size: string, edition: "fan"|"player", playerId: string, source?: "yupoo", title?: string, url?: string }[]} */
 let inquiryItems = [];
 
 let catalogSearch = "";
@@ -105,16 +115,30 @@ let subfilterClub = "ALL";
 let subfilterSeason = "ALL";
 
 const FILTERS = [
-  { l: "TODAS",          match: () => true },
-  { l: "FAVORITOS",      match: s => favoriteIds.has(s.id) },
-  { l: "REBAJAS",        match: s => s.oldPrice != null && Number(s.oldPrice) > 0 },
-  { l: "LALIGA",         match: s => s.league === "LaLiga" },
-  { l: "PREMIER LEAGUE", match: s => s.league === "Premier League" },
-  { l: "CHAMPIONS",      match: s => s.league === "Champions" },
-  { l: "SELECCIONES",    match: s => s.league === "Selección" },
+  { l: FILTER_DISPONIBLES, match: () => true, mode: "curated" },
+  { l: FILTER_YUPOO,       match: () => false, mode: "yupoo" },
+  { l: "FAVORITOS",        match: s => favoriteIds.has(s.id), mode: "curated" },
+  { l: "REBAJAS",          match: s => s.oldPrice != null && Number(s.oldPrice) > 0, mode: "curated" },
+  { l: "LALIGA",           match: s => s.league === "LaLiga", mode: "curated" },
+  { l: "PREMIER LEAGUE",   match: s => s.league === "Premier League", mode: "curated" },
+  { l: "CHAMPIONS",        match: s => s.league === "Champions", mode: "curated" },
+  { l: "SELECCIONES",      match: s => s.league === "Selección", mode: "curated" },
 ];
 
-let activeFilter = "TODAS";
+let activeFilter = FILTER_DISPONIBLES;
+
+/** @type {{ total: number, pageSize: number, pages: number, syncedAt?: string } | null} */
+let yupooMeta = null;
+/** @type {Map<number, Array<{id:string,title:string,thumb:string,url:string,photoCount:number}>>} */
+const yupooPageCache = new Map();
+/** @type {Array<{id:string,title:string}> | null} */
+let yupooSearchIndex = null;
+/** @type {Record<string, number> | null} */
+let yupooIdToPage = null;
+let yupooPage = 1;
+let yupooLoadToken = 0;
+/** Cache de ítems Yupoo vistos (para modal / consulta) */
+const yupooItemById = new Map();
 
 /** Ruta de producto en hash: #/camisa/:id */
 let productModalOpenId = null;
@@ -173,10 +197,36 @@ function loadFavorites() {
     const raw = localStorage.getItem(STORAGE_FAV);
     if (raw) favoriteIds = new Set(JSON.parse(raw));
   } catch (_) {}
+  try {
+    const rawMeta = localStorage.getItem(STORAGE_YUPOO_FAV);
+    if (rawMeta) {
+      const parsed = JSON.parse(rawMeta);
+      if (parsed && typeof parsed === "object") {
+        yupooFavMeta = parsed;
+        rememberYupooItems(Object.values(yupooFavMeta));
+      }
+    }
+  } catch (_) {}
 }
 
 function saveFavorites() {
   localStorage.setItem(STORAGE_FAV, JSON.stringify([...favoriteIds]));
+}
+
+function saveYupooFavMeta() {
+  localStorage.setItem(STORAGE_YUPOO_FAV, JSON.stringify(yupooFavMeta));
+}
+
+function yupooFavId(albumId) {
+  return `yupoo:${albumId}`;
+}
+
+function isYupooFavorite(albumId) {
+  return favoriteIds.has(yupooFavId(albumId));
+}
+
+function getYupooFavoriteItems() {
+  return Object.values(yupooFavMeta).filter((it) => it?.id && favoriteIds.has(yupooFavId(it.id)));
 }
 
 function toggleFavorite(id) {
@@ -184,11 +234,48 @@ function toggleFavorite(id) {
   else favoriteIds.add(id);
   saveFavorites();
   updateHeaderBadges();
-  const card = document.querySelector(`.card[data-id="${id}"]`);
+  const card = document.querySelector(`.card[data-id="${String(id).replace(/"/g, "")}"]`);
   if (card) {
     card.querySelector(".heart")?.classList.toggle("is-fav", favoriteIds.has(id));
     card.classList.toggle("card--fav", favoriteIds.has(id));
   }
+  if (activeFilter === "FAVORITOS") renderGrid();
+}
+
+function toggleYupooFavorite(albumId) {
+  const id = String(albumId);
+  const fid = yupooFavId(id);
+  const item = getYupooItem(id) || yupooFavMeta[id];
+  if (favoriteIds.has(fid)) {
+    favoriteIds.delete(fid);
+    delete yupooFavMeta[id];
+  } else {
+    favoriteIds.add(fid);
+    if (item) {
+      yupooFavMeta[id] = {
+        id: String(item.id),
+        title: item.title || "",
+        thumb: item.thumb || "",
+        url: item.url || "",
+        photoCount: Number(item.photoCount) || 0,
+      };
+      rememberYupooItems([yupooFavMeta[id]]);
+    }
+  }
+  saveFavorites();
+  saveYupooFavMeta();
+  updateHeaderBadges();
+
+  const card = document.querySelector(`.card--yupoo[data-yupoo-id="${id.replace(/"/g, "")}"]`);
+  if (card) {
+    card.querySelector(".heart")?.classList.toggle("is-fav", favoriteIds.has(fid));
+    card.classList.toggle("card--fav", favoriteIds.has(fid));
+  }
+  const modalFav = document.getElementById("modal-toggle-fav-yupoo");
+  if (modalFav && productModalOpenId === fid) {
+    modalFav.textContent = favoriteIds.has(fid) ? "Quitar de favoritos" : "Guardar en favoritos";
+  }
+  if (activeFilter === "FAVORITOS") renderGrid();
 }
 
 function loadInquiry() {
@@ -200,6 +287,9 @@ function loadInquiry() {
         size: it.size,
         edition: it.edition === "player" ? "player" : "fan",
         playerId: typeof it.playerId === "string" ? it.playerId : "none",
+        source: it.source === "yupoo" || String(it.id).startsWith("yupoo:") ? "yupoo" : undefined,
+        title: typeof it.title === "string" ? it.title : undefined,
+        url: typeof it.url === "string" ? it.url : undefined,
       }));
     }
   } catch (_) {}
@@ -211,6 +301,81 @@ function saveInquiry() {
 
 function getShirt(id) {
   return SHIRTS.find(s => s.id === id);
+}
+
+function isYupooMode() {
+  return activeFilter === FILTER_YUPOO;
+}
+
+function rememberYupooItems(items) {
+  if (!Array.isArray(items)) return;
+  for (const it of items) {
+    if (it?.id) yupooItemById.set(String(it.id), it);
+  }
+}
+
+function getYupooItem(id) {
+  return yupooItemById.get(String(id)) || null;
+}
+
+/** photo.yupoo.com bloquea hotlink; servir vía /api/yupoo-img */
+function yupooProxiedThumb(url) {
+  if (!url || typeof url !== "string") return "";
+  try {
+    const u = new URL(url, "https://photo.yupoo.com");
+    if (u.hostname !== "photo.yupoo.com") return url;
+    return `/api/yupoo-img?u=${encodeURIComponent(u.href)}`;
+  } catch {
+    return url;
+  }
+}
+
+async function loadYupooMeta() {
+  if (yupooMeta) return yupooMeta;
+  const res = await fetch(YUPOO_META_URL, { cache: "no-store" });
+  if (!res.ok) throw new Error("yupoo-meta");
+  yupooMeta = await res.json();
+  return yupooMeta;
+}
+
+async function loadYupooPage(n) {
+  if (yupooPageCache.has(n)) return yupooPageCache.get(n);
+  const res = await fetch(YUPOO_PAGE_URL(n), { cache: "force-cache" });
+  if (!res.ok) throw new Error(`yupoo-page-${n}`);
+  const list = await res.json();
+  const items = Array.isArray(list) ? list : [];
+  yupooPageCache.set(n, items);
+  rememberYupooItems(items);
+  return items;
+}
+
+async function loadYupooSearchIndex() {
+  if (yupooSearchIndex) return yupooSearchIndex;
+  const res = await fetch(YUPOO_SEARCH_URL, { cache: "force-cache" });
+  if (!res.ok) throw new Error("yupoo-search");
+  const list = await res.json();
+  yupooSearchIndex = Array.isArray(list) ? list : [];
+  return yupooSearchIndex;
+}
+
+async function loadYupooIdMap() {
+  if (yupooIdToPage) return yupooIdToPage;
+  const res = await fetch(YUPOO_ID_MAP_URL, { cache: "force-cache" });
+  if (!res.ok) throw new Error("yupoo-idmap");
+  yupooIdToPage = await res.json();
+  return yupooIdToPage;
+}
+
+async function hydrateYupooIds(ids) {
+  const map = await loadYupooIdMap();
+  const pagesNeeded = new Set();
+  for (const id of ids) {
+    if (yupooItemById.has(String(id))) continue;
+    const p = map[String(id)];
+    if (p) pagesNeeded.add(p);
+  }
+  await Promise.all([...pagesNeeded].map((p) => loadYupooPage(p)));
+  return ids.map((id) => getYupooItem(id)).filter(Boolean);
 }
 
 function getFanPrice(s) {
@@ -319,9 +484,14 @@ function buildProductLine(s, size, edition, playerId) {
 
 function buildInquiryMessage() {
   if (inquiryItems.length === 0) return "";
-  const lines = inquiryItems.map(({ id, size, edition, playerId }) => {
-    const s = getShirt(id);
-    return s ? buildProductLine(s, size, edition || "fan", playerId || "none") : "";
+  const lines = inquiryItems.map((item) => {
+    if (item.source === "yupoo" || String(item.id).startsWith("yupoo:")) {
+      const title = item.title || getYupooItem(String(item.id).replace(/^yupoo:/, ""))?.title || item.id;
+      const url = item.url || getYupooItem(String(item.id).replace(/^yupoo:/, ""))?.url || "";
+      return `• [Catálogo completo] ${title}${url ? ` · ${url}` : ""}`;
+    }
+    const s = getShirt(item.id);
+    return s ? buildProductLine(s, item.size, item.edition || "fan", item.playerId || "none") : "";
   }).filter(Boolean);
   return `Hola 90 Minutos Sports 👋\n\nMe interesa consultar por:\n\n${lines.join("\n")}\n\n¡Gracias!`;
 }
@@ -472,6 +642,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (searchInput) {
     searchInput.addEventListener("input", debounce(() => {
       catalogSearch = searchInput.value;
+      if (isYupooMode()) yupooPage = 1;
       renderGrid();
     }, 200));
   }
@@ -536,14 +707,26 @@ function getRefineOptions() {
 function buildCatalogRefine() {
   const wrap = document.getElementById("catalog-refine");
   if (!wrap) return;
-  const isTodas = activeFilter === "TODAS";
-  wrap.hidden = isTodas;
-  if (isTodas) return;
+  const refineRow = wrap.querySelector(".refine-row");
+  const searchEl = document.getElementById("catalog-search");
+  const isYupoo = isYupooMode();
+
+  // Siempre visible: en Yupoo solo búsqueda; en el resto también Equipo/Temporada.
+  wrap.hidden = false;
+  if (refineRow) refineRow.hidden = isYupoo;
+
+  if (searchEl) {
+    searchEl.value = catalogSearch;
+    searchEl.placeholder = isYupoo
+      ? "Buscar en todo el catálogo (título)…"
+      : "Buscar por equipo, temporada, liga…";
+  }
+
+  if (isYupoo) return;
+
   const { clubs, seasons } = getRefineOptions();
   const clubSel = document.getElementById("subfilter-club");
   const seaSel = document.getElementById("subfilter-season");
-  const searchEl = document.getElementById("catalog-search");
-  if (searchEl) searchEl.value = catalogSearch;
   if (!clubSel || !seaSel) return;
   if (subfilterClub !== "ALL" && !clubs.includes(subfilterClub)) subfilterClub = "ALL";
   if (subfilterSeason !== "ALL" && !seasons.includes(subfilterSeason)) subfilterSeason = "ALL";
@@ -565,6 +748,7 @@ function buildFilters() {
       catalogSearch = "";
       subfilterClub = "ALL";
       subfilterSeason = "ALL";
+      yupooPage = 1;
       const searchEl = document.getElementById("catalog-search");
       if (searchEl) searchEl.value = "";
       buildFilters();
@@ -577,7 +761,6 @@ function buildFilters() {
 function getListForGrid() {
   const f = FILTERS.find(x => x.l === activeFilter);
   let list = SHIRTS.filter(f.match);
-  if (activeFilter === "TODAS") return list;
   const q = catalogSearch.trim().toLowerCase();
   if (q) {
     list = list.filter(s =>
@@ -603,25 +786,355 @@ function updateCardPricing(card, shirt) {
 }
 
 // ---------- Grid ----------
-function renderGrid() {
-  const grid = document.getElementById("grid");
-  if (!grid) return;
-  const list = getListForGrid();
-  const countEl = document.getElementById("count");
-  if (countEl) countEl.textContent = list.length;
-  if (list.length === 0) {
-    grid.innerHTML = `<p class="catalog-empty muted">No hay modelos en esta vista. Prueba otro filtro o guarda favoritos con el corazón.</p>`;
+function setYupooPager(html) {
+  let pager = document.getElementById("yupoo-pager");
+  if (!pager) {
+    const grid = document.getElementById("grid");
+    if (!grid || !grid.parentElement) return;
+    pager = document.createElement("div");
+    pager.id = "yupoo-pager";
+    pager.className = "yupoo-pager";
+    grid.insertAdjacentElement("afterend", pager);
+  }
+  pager.hidden = !html;
+  pager.innerHTML = html || "";
+}
+
+function bindYupooPager(totalPages) {
+  const pager = document.getElementById("yupoo-pager");
+  if (!pager) return;
+  pager.querySelector("[data-yupoo-prev]")?.addEventListener("click", () => {
+    if (yupooPage <= 1) return;
+    yupooPage -= 1;
+    renderGrid();
+    document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  pager.querySelector("[data-yupoo-next]")?.addEventListener("click", () => {
+    if (yupooPage >= totalPages) return;
+    yupooPage += 1;
+    renderGrid();
+    document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  pager.querySelectorAll("[data-yupoo-goto]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const n = Number(btn.dataset.yupooGoto);
+      if (!n || n === yupooPage) return;
+      yupooPage = n;
+      renderGrid();
+      document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
+function yupooPagerHTML(page, totalPages, totalItems) {
+  if (totalPages <= 1) {
+    return `<p class="yupoo-pager-meta muted small">${totalItems.toLocaleString("es-ES")} modelos en el catálogo completo</p>`;
+  }
+  const windowSize = 5;
+  let start = Math.max(1, page - Math.floor(windowSize / 2));
+  let end = Math.min(totalPages, start + windowSize - 1);
+  start = Math.max(1, end - windowSize + 1);
+  const nums = [];
+  for (let i = start; i <= end; i++) nums.push(i);
+  return `
+    <p class="yupoo-pager-meta muted small">${totalItems.toLocaleString("es-ES")} modelos · página ${page} de ${totalPages}</p>
+    <div class="yupoo-pager-controls">
+      <button type="button" class="btn btn-ghost yupoo-page-btn" data-yupoo-prev ${page <= 1 ? "disabled" : ""}>Anterior</button>
+      ${nums.map((n) =>
+        `<button type="button" class="yupoo-page-num${n === page ? " active" : ""}" data-yupoo-goto="${n}">${n}</button>`
+      ).join("")}
+      <button type="button" class="btn btn-ghost yupoo-page-btn" data-yupoo-next ${page >= totalPages ? "disabled" : ""}>Siguiente</button>
+    </div>`;
+}
+
+function bindYupooCards(grid) {
+  grid.querySelectorAll(".card--yupoo").forEach((card) => {
+    const id = card.dataset.yupooId;
+    card.querySelector(".img")?.addEventListener("click", (e) => {
+      if (e.target.closest(".heart")) return;
+      openYupooModal(id);
+    });
+    card.querySelector(".open-detail")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openYupooModal(id);
+    });
+    card.querySelector(".add-quick")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      addYupooToInquiry(id);
+    });
+    const heart = card.querySelector(".heart");
+    heart?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleYupooFavorite(id);
+    });
+    heart?.classList.toggle("is-fav", isYupooFavorite(id));
+    card.classList.toggle("card--fav", isYupooFavorite(id));
+  });
+}
+
+function yupooCardHTML(item, i) {
+  const heart = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+  const ig = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>`;
+  const src = yupooProxiedThumb(item.thumb);
+  const thumb = src
+    ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(item.title)}" loading="lazy" />`
+    : `<div class="bg" style="background:linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)"></div>`;
+  const photos = item.photoCount ? `${item.photoCount} fotos` : "Catálogo";
+  const fav = isYupooFavorite(item.id);
+  return `
+  <article class="card card--yupoo${fav ? " card--fav" : ""}" data-yupoo-id="${escapeAttr(item.id)}" style="--d:${(i % 4) * 0.08}s">
+    <div class="img">
+      ${thumb}
+      <div class="water">YP</div>
+      <div class="top">
+        <span></span>
+        <button type="button" class="heart${fav ? " is-fav" : ""}" aria-label="Favorito">${heart}</button>
+      </div>
+      <button type="button" class="open-detail" aria-label="Ver detalle">Ver detalle</button>
+      <button type="button" class="add-quick">${ig} Añadir a la consulta</button>
+    </div>
+    <div class="info">
+      <div class="team">${escapeHtml(item.title)}</div>
+      <div class="card-meta muted small">${photos}</div>
+      <div class="price-row">
+        <div class="price-block">
+          <div class="price">Bajo consulta</div>
+          <div class="price-bs muted small">Pedido bajo demanda</div>
+        </div>
+      </div>
+    </div>
+  </article>`;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function escapeAttr(str) {
+  return escapeHtml(str).replace(/'/g, "&#39;");
+}
+
+function addYupooToInquiry(id) {
+  const item = getYupooItem(id);
+  if (!item) {
+    showToast("No se pudo añadir este modelo.");
     return;
   }
-  grid.innerHTML = list.map((s, i) => cardHTML(s, i)).join("");
-
-  grid.querySelectorAll(".card").forEach((el) => {
-    el.classList.add("reveal");
-    initTilt(el);
+  inquiryItems.push({
+    id: `yupoo:${item.id}`,
+    size: "—",
+    edition: "fan",
+    playerId: "none",
+    source: "yupoo",
+    title: item.title,
+    url: item.url,
   });
-  observeReveals(grid.querySelectorAll(".reveal"));
+  saveInquiry();
+  updateHeaderBadges();
+  renderInquiryList();
+  showToast("Añadido a tu consulta.");
+}
 
-  grid.querySelectorAll(".card").forEach(card => {
+/** Cache de galerías Yupoo: id → string[] (urls absolutas photo.yupoo.com) */
+const yupooGalleryCache = new Map();
+
+async function fetchYupooAlbumImages(id) {
+  const key = String(id);
+  if (yupooGalleryCache.has(key)) return yupooGalleryCache.get(key);
+  const res = await fetch(`/api/yupoo-album?id=${encodeURIComponent(key)}`, { cache: "force-cache" });
+  if (!res.ok) throw new Error(`album ${res.status}`);
+  const data = await res.json();
+  const images = Array.isArray(data?.images) ? data.images.filter(Boolean) : [];
+  yupooGalleryCache.set(key, images);
+  return images;
+}
+
+function bindYupooGallery(root, images, title) {
+  const main = root.querySelector(".yupoo-gallery-main");
+  const thumbs = root.querySelectorAll(".yupoo-gallery-thumb");
+  if (!main || !images.length) return;
+  let index = 0;
+  const show = (i) => {
+    index = (i + images.length) % images.length;
+    main.src = yupooProxiedThumb(images[index]);
+    main.alt = `${title} · foto ${index + 1}`;
+    thumbs.forEach((btn, ti) => btn.classList.toggle("active", ti === index));
+  };
+  thumbs.forEach((btn) => {
+    btn.addEventListener("click", () => show(Number(btn.dataset.index) || 0));
+  });
+  root.querySelector("[data-yupoo-prev]")?.addEventListener("click", () => show(index - 1));
+  root.querySelector("[data-yupoo-next]")?.addEventListener("click", () => show(index + 1));
+}
+
+function openYupooModal(id) {
+  const item = getYupooItem(id);
+  const modal = document.getElementById("product-modal");
+  const body = document.getElementById("modal-body");
+  if (!item || !modal || !body) return;
+
+  const ig = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>`;
+  const fallbackSrc = yupooProxiedThumb(item.thumb);
+  productModalOpenId = `yupoo:${id}`;
+
+  body.innerHTML = `
+    <div class="modal-visual modal-visual--yupoo" data-yupoo-gallery>
+      <div class="yupoo-gallery">
+        <div class="yupoo-gallery-stage">
+          ${fallbackSrc
+            ? `<img class="yupoo-gallery-main" src="${escapeAttr(fallbackSrc)}" alt="${escapeAttr(item.title)}" />`
+            : `<div class="yupoo-gallery-placeholder"></div>`}
+          <button type="button" class="yupoo-gallery-nav yupoo-gallery-nav--prev" data-yupoo-prev aria-label="Foto anterior" hidden>‹</button>
+          <button type="button" class="yupoo-gallery-nav yupoo-gallery-nav--next" data-yupoo-next aria-label="Foto siguiente" hidden>›</button>
+        </div>
+        <p class="yupoo-gallery-status muted small">Cargando fotos del álbum…</p>
+        <div class="yupoo-gallery-thumbs" hidden></div>
+      </div>
+    </div>
+    <div class="modal-info">
+      <h3 id="modal-title">${escapeHtml(item.title)}</h3>
+      <p class="muted small js-yupoo-photo-count">${item.photoCount ? `${item.photoCount} fotos en el álbum` : "Modelo"}</p>
+      <div class="modal-price-wrap">
+        <div class="modal-price-row">
+          <span class="price modal-price-live">Bajo consulta</span>
+          <span class="badge-tag CONSULTA">CONSULTA</span>
+        </div>
+      </div>
+      <p class="muted small modal-desc">Este modelo forma parte del catálogo completo. Consulta disponibilidad, tallas y precio por Instagram. No forma parte del stock «Disponibles» curado.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary btn-modal-ig" id="modal-add-inquiry">${ig} Añadir a la consulta</button>
+        <button type="button" class="btn btn-ghost" id="modal-toggle-fav-yupoo">${isYupooFavorite(id) ? "Quitar de favoritos" : "Guardar en favoritos"}</button>
+      </div>
+    </div>`;
+
+  document.getElementById("modal-add-inquiry")?.addEventListener("click", () => addYupooToInquiry(id));
+  document.getElementById("modal-toggle-fav-yupoo")?.addEventListener("click", () => toggleYupooFavorite(id));
+
+  document.title = `${item.title} · 90 Minutos Sports`;
+  modal.classList.add("modal--open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  fetchYupooAlbumImages(id)
+    .then((images) => {
+      if (productModalOpenId !== `yupoo:${id}`) return;
+      const galleryRoot = body.querySelector("[data-yupoo-gallery]");
+      const status = body.querySelector(".yupoo-gallery-status");
+      const thumbsWrap = body.querySelector(".yupoo-gallery-thumbs");
+      const countEl = body.querySelector(".js-yupoo-photo-count");
+      if (!galleryRoot) return;
+
+      const list = images.length ? images : (item.thumb ? [item.thumb] : []);
+      if (!list.length) {
+        if (status) status.textContent = "No se encontraron fotos del álbum.";
+        return;
+      }
+
+      if (countEl) countEl.textContent = `${list.length} foto${list.length === 1 ? "" : "s"}`;
+      if (status) status.hidden = true;
+
+      const prev = galleryRoot.querySelector("[data-yupoo-prev]");
+      const next = galleryRoot.querySelector("[data-yupoo-next]");
+      if (list.length > 1) {
+        if (prev) prev.hidden = false;
+        if (next) next.hidden = false;
+      }
+
+      if (thumbsWrap && list.length > 1) {
+        thumbsWrap.hidden = false;
+        thumbsWrap.innerHTML = list.map((url, i) =>
+          `<button type="button" class="yupoo-gallery-thumb${i === 0 ? " active" : ""}" data-index="${i}" aria-label="Foto ${i + 1}">
+            <img src="${escapeAttr(yupooProxiedThumb(url))}" alt="" loading="lazy" />
+          </button>`
+        ).join("");
+      }
+
+      const main = galleryRoot.querySelector(".yupoo-gallery-main");
+      if (main) {
+        main.src = yupooProxiedThumb(list[0]);
+        main.alt = `${item.title} · foto 1`;
+      }
+      bindYupooGallery(galleryRoot, list, item.title);
+    })
+    .catch(() => {
+      if (productModalOpenId !== `yupoo:${id}`) return;
+      const status = body.querySelector(".yupoo-gallery-status");
+      if (status) status.textContent = "No se pudieron cargar las fotos.";
+    });
+}
+
+async function renderYupooGrid() {
+  const grid = document.getElementById("grid");
+  if (!grid) return;
+  const countEl = document.getElementById("count");
+  const token = ++yupooLoadToken;
+
+  grid.innerHTML = `<p class="catalog-empty muted">Cargando catálogo completo…</p>`;
+  setYupooPager("");
+
+  try {
+    const meta = await loadYupooMeta();
+    if (token !== yupooLoadToken || !isYupooMode()) return;
+
+    const q = catalogSearch.trim().toLowerCase();
+    let items = [];
+    let total = meta.total || 0;
+    let totalPages = meta.pages || 1;
+
+    if (q) {
+      const index = await loadYupooSearchIndex();
+      if (token !== yupooLoadToken || !isYupooMode()) return;
+      const matchedIds = index
+        .filter((row) => row.title && row.title.toLowerCase().includes(q))
+        .map((row) => row.id);
+      total = matchedIds.length;
+      totalPages = Math.max(1, Math.ceil(total / (meta.pageSize || 100)));
+      if (yupooPage > totalPages) yupooPage = totalPages;
+      if (yupooPage < 1) yupooPage = 1;
+      const pageSize = meta.pageSize || 100;
+      const start = (yupooPage - 1) * pageSize;
+      const pageIds = matchedIds.slice(start, start + pageSize);
+      items = await hydrateYupooIds(pageIds);
+    } else {
+      if (yupooPage > totalPages) yupooPage = totalPages;
+      if (yupooPage < 1) yupooPage = 1;
+      items = await loadYupooPage(yupooPage);
+    }
+
+    if (token !== yupooLoadToken || !isYupooMode()) return;
+
+    if (countEl) countEl.textContent = String(total);
+
+    if (items.length === 0) {
+      grid.innerHTML = `<p class="catalog-empty muted">${q ? "No hay coincidencias en el catálogo completo." : "El catálogo completo aún no está sincronizado. Ejecuta npm run sync-yupoo."}</p>`;
+      setYupooPager("");
+      return;
+    }
+
+    grid.innerHTML = items.map((it, i) => yupooCardHTML(it, i)).join("");
+    grid.querySelectorAll(".card").forEach((el) => {
+      el.classList.add("reveal");
+      initTilt(el);
+    });
+    observeReveals(grid.querySelectorAll(".reveal"));
+    bindYupooCards(grid);
+    setYupooPager(yupooPagerHTML(yupooPage, totalPages, total));
+    bindYupooPager(totalPages);
+  } catch (err) {
+    if (token !== yupooLoadToken || !isYupooMode()) return;
+    console.warn("yupoo grid", err);
+    if (countEl) countEl.textContent = "0";
+    grid.innerHTML = `<p class="catalog-empty muted">No se pudo cargar el catálogo completo. Genera los datos con <code>npm run sync-yupoo</code> y vuelve a intentar.</p>`;
+    setYupooPager("");
+  }
+}
+
+function bindCuratedCards(grid) {
+  grid.querySelectorAll(".card:not(.card--yupoo)").forEach(card => {
     const id = card.dataset.id;
     const shirt = getShirt(id);
     if (!shirt) return;
@@ -682,8 +1195,49 @@ function renderGrid() {
       openProductModal(id);
     });
 
-    card.querySelector(".img")?.addEventListener("click", () => openProductModal(id));
+    card.querySelector(".img")?.addEventListener("click", (e) => {
+      if (e.target.closest(".heart")) return;
+      openProductModal(id);
+    });
   });
+}
+
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  if (!grid) return;
+
+  if (isYupooMode()) {
+    renderYupooGrid();
+    return;
+  }
+
+  yupooLoadToken += 1;
+  setYupooPager("");
+
+  const shirts = getListForGrid();
+  const yupooFavs = activeFilter === "FAVORITOS" ? getYupooFavoriteItems() : [];
+  rememberYupooItems(yupooFavs);
+
+  const countEl = document.getElementById("count");
+  const totalCount = shirts.length + yupooFavs.length;
+  if (countEl) countEl.textContent = totalCount;
+
+  if (totalCount === 0) {
+    grid.innerHTML = `<p class="catalog-empty muted">No hay modelos en esta vista. Prueba otro filtro o guarda favoritos con el corazón.</p>`;
+    return;
+  }
+
+  grid.innerHTML =
+    shirts.map((s, i) => cardHTML(s, i)).join("") +
+    yupooFavs.map((it, i) => yupooCardHTML(it, shirts.length + i)).join("");
+
+  grid.querySelectorAll(".card").forEach((el) => {
+    el.classList.add("reveal");
+    initTilt(el);
+  });
+  observeReveals(grid.querySelectorAll(".reveal"));
+  bindCuratedCards(grid);
+  if (yupooFavs.length) bindYupooCards(grid);
 }
 
 function cardHTML(s, i) {
@@ -755,6 +1309,16 @@ function renderInquiryList() {
     return;
   }
   ul.innerHTML = inquiryItems.map((item, index) => {
+    if (item.source === "yupoo" || String(item.id).startsWith("yupoo:")) {
+      const title = item.title || "Modelo catálogo completo";
+      return `<li class="inquiry-item">
+        <div>
+          <div class="inquiry-name">${escapeHtml(title)}</div>
+          <div class="inquiry-meta muted small">Catálogo completo · Bajo consulta</div>
+        </div>
+        <button type="button" class="inquiry-remove" data-idx="${index}" aria-label="Quitar">×</button>
+      </li>`;
+    }
     const s = getShirt(item.id);
     if (!s) return "";
     const ed = item.edition === "player" ? "Player" : "Fan";

@@ -5,10 +5,54 @@ Sitio web estático **90 Minutos Sports** — catálogo de camisas, consulta por
 ## Cómo verlo en local
 
 ```bash
-python3 -m http.server 8080
+npm run dev
 ```
 
 Abre `http://localhost:8080`.
+
+> Usa `npm run dev` (no `python3 -m http.server`) para que las miniaturas del catálogo Yupoo carguen: Yupoo bloquea hotlink y el servidor local incluye un proxy en `/api/yupoo-img`.
+
+## Catálogo: Disponibles vs Todo el catálogo
+
+En `catalogo.html` hay dos vistas principales:
+
+| Filtro | Origen | Qué muestra |
+|--------|--------|-------------|
+| **DISPONIBLES** | `data/productos.json` (Decap CMS) | Stock curado con precios, tallas y edición Fan/Player |
+| **TODO EL CATÁLOGO** | `data/yupoo/*.json` | Índice del proveedor Yupoo (~16 000 modelos), paginado, bajo consulta |
+
+### Actualizar el catálogo Yupoo
+
+El HTML de Yupoo se scrapea **offline** (no en el navegador del usuario):
+
+```bash
+npm run sync-yupoo
+```
+
+Opciones útiles:
+
+```bash
+# Solo las primeras N páginas remotas (pruebas)
+npm run sync-yupoo -- --max-pages 3
+
+# Más espera entre requests (si hay rate-limit)
+npm run sync-yupoo -- --delay 600
+```
+
+Genera:
+
+- `data/yupoo/meta.json` — total, páginas, fecha de sync
+- `data/yupoo/pages/page-N.json` — chunks de ~100 ítems (id, title, thumb, url)
+- `data/yupoo/search-index.json` — índice liviano para búsqueda por título
+- `data/yupoo/id-to-page.json` — mapa id → página para hidratar resultados de búsqueda
+
+Después del sync, haz commit de esos JSON y publica (Netlify rebuild) para que la web los sirva.
+
+En Netlify, las edge functions sirven:
+- `/api/yupoo-img` — proxy de miniaturas/fotos (Yupoo rechaza hotlink directo)
+- `/api/yupoo-album` — fotos de un álbum al abrir el detalle de una camisa
+
+**No** hace falta base de datos en v1: el sitio sigue siendo estático.
 
 ## Gestionar productos sin programar (Decap CMS)
 

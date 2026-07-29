@@ -1,0 +1,10 @@
+[build]
+  publish = "."
+
+[[edge_functions]]
+  function = "yupoo-img"
+  path = "/api/yupoo-img"
+
+[[edge_functions]]
+  function = "yupoo-album"
+  path = "/api/yupoo-album"
