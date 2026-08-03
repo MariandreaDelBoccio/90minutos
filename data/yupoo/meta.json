@@ -3,9 +3,11 @@
   "albumTotal": 13193,
   "pageSize": 100,
   "pages": 109,
-  "syncedAt": "2026-07-29T22:34:59.239Z",
+  "syncedAt": "2026-08-03T09:05:04.491Z",
   "source": "https://pinhuistore.x.yupoo.com/albums?tab=gallery",
   "grouped": true,
   "teams": 157,
-  "curationApplied": true
+  "curationApplied": true,
+  "remotePagesFetched": 133,
+  "remotePagesTotal": 133
 }
