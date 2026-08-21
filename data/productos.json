@@ -16,21 +16,14 @@
       ],
       "players": [
         {
-          "name": "Lamine Yamal",
-          "id": "lamineyamal"
-        },
-        {
-          "name": "Pedri",
-          "id": "pedri"
-        },
-        {
-          "name": "Dani Olmo",
-          "id": "daniolmo"
+          "name": "MBAPPE",
+          "id": "mbappe",
+          "number": "10 "
         }
       ],
       "club": "Real Madrid ",
       "id": "rm-2526-home",
-      "image": "/assets/productos/pedri-20-home-front.webp",
+      "image": "/assets/productos/1.jpeg",
       "team": "Real Madrid Home 26/27 "
     },
     {
