@@ -78,7 +78,7 @@
       "season": "24/25",
       "bg": "linear-gradient(135deg,#0c4a6e,#0ea5e9 60%,#e0f2fe)",
       "price": 52,
-      "pricePlayer": 86,
+      "pricePlayer": "",
       "homeFeatured": true,
       "league": "Premier League",
       "outOfStock": [],
