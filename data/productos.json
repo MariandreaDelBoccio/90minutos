@@ -49,43 +49,30 @@
         }
       ],
       "club": "Real Madrid ",
-      "id": "rm-2526-home",
+      "id": "",
       "image": "/assets/productos/frontal.jpeg",
       "team": "Real Madrid Home 26/27 "
     },
     {
-      "season": "24/25",
+      "season": "25/26",
       "badge": "NUEVO",
       "bg": "linear-gradient(135deg,#3b0764,#7c1d6f 50%,#f59e0b)",
-      "price": 44.99,
-      "pricePlayer": 74.99,
+      "price": 25,
+      "pricePlayer": 30,
       "homeFeatured": true,
-      "league": "LaLiga",
+      "league": "Selección",
       "outOfStock": [
-        "L"
-      ],
-      "sizes": [
-        "S",
-        "M",
         "L",
         "XL"
       ],
-      "players": [
-        {
-          "id": "yamal",
-          "name": "Lamine Yamal",
-          "number": "10"
-        },
-        {
-          "id": "lewandowski",
-          "name": "Lewandowski",
-          "number": "9"
-        }
+      "sizes": [
+        "L"
       ],
-      "club": "FC Barcelona",
-      "id": "2",
-      "image": "assets/productos/descarga (1).jpeg",
-      "team": "FC Barcelona Away 24/25"
+      "players": [],
+      "club": "Venezuela",
+      "id": "",
+      "image": "/assets/productos/whatsapp-image-2026-08-22-at-00.14.51.jpeg",
+      "team": "Venezuela Away 25/27"
     },
     {
       "season": "24/25",
@@ -115,8 +102,8 @@
       ],
       "club": "Manchester City",
       "id": "3",
-      "image": "assets/productos/descarga (2).jpeg",
-      "team": "Manchester City Home 24/25"
+      "image": "https://media.discordapp.net/attachments/1337938680807161929/1540484941979066520/fashion-shirt-on-white-background-free-photo_copia.png?ex=6a8a1fe6&is=6a88ce66&hm=0821bd0ee648fd2a6d8401b314b7dcdccc6d445bc70eda0b83ab057ea80ae1ca&=&format=webp&quality=lossless",
+      "team": "Barcelona Home 05/06"
     },
     {
       "season": "24/25",
