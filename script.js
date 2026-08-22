@@ -112,6 +112,33 @@ function normalizeShirt(raw, index) {
   };
 }
 
+/** Slug estable a partir de club + nombre (sin depender del orden en la lista). */
+function slugifyShirtId(s, index) {
+  const base = `${s.club || ""} ${s.team || ""}`.trim().toLowerCase();
+  const slug = base
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || `producto-${index + 1}`;
+}
+
+/** Evita colisiones: varios productos con id "" o el mismo "3" apuntaban al primero (p. ej. Venezuela). */
+function ensureUniqueShirtIds(shirts) {
+  const seen = new Set();
+  return shirts.map((s, index) => {
+    let id = String(s.id || "").trim();
+    if (!id || seen.has(id)) {
+      let candidate = slugifyShirtId(s, index);
+      let n = 2;
+      while (seen.has(candidate)) candidate = `${slugifyShirtId(s, index)}-${n++}`;
+      id = candidate;
+    }
+    seen.add(id);
+    return id === s.id ? s : { ...s, id };
+  });
+}
+
 async function loadShirts() {
   try {
     const res = await fetch(PRODUCTS_URL, { cache: "no-store" });
@@ -119,7 +146,7 @@ async function loadShirts() {
     const payload = await res.json();
     const list = Array.isArray(payload) ? payload : payload?.productos;
     if (!Array.isArray(list) || list.length === 0) throw new Error("empty");
-    SHIRTS = list.map(normalizeShirt);
+    SHIRTS = ensureUniqueShirtIds(list.map(normalizeShirt));
   } catch (_) {
     SHIRTS = [...DEFAULT_SHIRTS];
   }

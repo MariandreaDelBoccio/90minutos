@@ -31,7 +31,7 @@ collections:
             fields:
               - { name: "team", label: "Nombre del producto", widget: "string", hint: "Ejemplo: Real Madrid Home 24/25" }
               - { name: "club", label: "Equipo o club", widget: "string", hint: "Ejemplo: Real Madrid" }
-              - { name: "id", label: "ID interno", widget: "string", hint: "Sin espacios. Ejemplo: rm-2425-home" }
+              - { name: "id", label: "ID interno", widget: "string", hint: "Obligatorio y único por producto (sin espacios). Ejemplo: barcelona-home-2627. Si lo dejas vacío o repites un id, la web genera uno automático." }
               - { name: "season", label: "Temporada", widget: "string", default: "24/25", hint: "Ejemplo: 24/25 o 2025" }
               - name: "league"
                 label: "Liga o competicion"
