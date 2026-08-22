@@ -23,6 +23,10 @@
         }
       ],
       "club": "Barcelona",
+      "images": [
+        "/assets/productos/whatsapp-image-2026-08-22-at-00.07.22.jpeg",
+        "/assets/productos/prueba.png"
+      ],
       "id": "",
       "image": "/assets/productos/whatsapp-image-2026-08-22-at-00.07.22.jpeg",
       "team": "Barcelona Home 26/27"
