@@ -68,7 +68,15 @@ collections:
                 required: false
                 hint: "Opcional. Elige las tallas sin stock."
                 options: ["XS", "S", "M", "L", "XL", "XXL"]
-              - { name: "image", label: "Imagen del producto", widget: "image", required: false, hint: "Recomendado. Si subes una imagen, la web la usa automaticamente.", media_library: { config: { multiple: false } } }
+              - name: "images"
+                label: "Imágenes del producto"
+                widget: "list"
+                required: false
+                collapsed: true
+                summary: "{{fields.src}}"
+                hint: "Sube una o varias fotos. La primera es la principal en el catálogo; el resto se ven al abrir el detalle."
+                field: { name: "src", label: "Foto", widget: "image" }
+              - { name: "image", label: "Imagen (legacy)", widget: "image", required: false, hint: "Solo si migras datos antiguos. Preferir el listado «Imágenes del producto».", media_library: { config: { multiple: false } } }
               - { name: "bg", label: "Color o fondo de reserva", widget: "string", required: false, default: "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)", hint: "Solo se usa si no hay imagen." }
               - name: "players"
                 label: "Jugadores sugeridos"

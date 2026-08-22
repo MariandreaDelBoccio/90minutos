@@ -64,6 +64,17 @@
       var pricePlayer = p.get("pricePlayer");
       var oldPrice = p.get("oldPrice");
       var imgPath = p.get("image");
+      var imagesRaw = p.get("images");
+      var imagesList = imagesRaw && imagesRaw.toJS ? imagesRaw.toJS() : imagesRaw;
+      if (!Array.isArray(imagesList)) imagesList = [];
+      var imageUrls = imagesList
+        .map(function (row) {
+          if (typeof row === "string") return row;
+          return row && row.src ? String(row.src) : "";
+        })
+        .filter(Boolean);
+      if (!imageUrls.length && imgPath) imageUrls = [String(imgPath)];
+
       var bgCss =
         p.get("bg") || "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)";
 
@@ -80,14 +91,28 @@
       if (!Array.isArray(players)) players = [];
 
       var visual;
-      if (imgPath) {
-        var asset = getAsset(imgPath);
-        var src = asset && asset.toString ? asset.toString() : String(imgPath);
-        visual = h("img", {
-          className: "productos-preview__img",
-          src: src,
-          alt: team || "Producto",
-        });
+      if (imageUrls.length) {
+        var primary = imageUrls[0];
+        var asset = getAsset(primary);
+        var src = asset && asset.toString ? asset.toString() : String(primary);
+        visual = h(
+          "div",
+          { className: "productos-preview__visual-stack" },
+          [
+            h("img", {
+              className: "productos-preview__img",
+              src: src,
+              alt: team || "Producto",
+            }),
+            imageUrls.length > 1
+              ? h(
+                  "p",
+                  { className: "productos-preview__hint productos-preview__hint--inline" },
+                  imageUrls.length + " fotos · mostrando la principal"
+                )
+              : null,
+          ].filter(Boolean)
+        );
       } else {
         visual = h("div", {
           className: "productos-preview__gradient",

@@ -83,15 +83,25 @@ async function loadLineupProducts() {
     const payload = await res.json();
     const list = Array.isArray(payload) ? payload : payload?.productos;
     if (!Array.isArray(list) || list.length === 0) throw new Error("empty");
-    const normalized = list.map((p, i) => ({
+    const normalized = list.map((p, i) => {
+      const images = Array.isArray(p.images)
+        ? p.images.map((x) => (typeof x === "string" ? x : x?.src)).filter(Boolean)
+        : [];
+      const image =
+        (typeof p.image === "string" && p.image.trim() ? p.image.trim() : "") ||
+        images[0] ||
+        FALLBACK_LINEUP[i]?.image ||
+        "";
+      return {
       id: String(p.id ?? i + 1),
       club: p.club || "",
       team: p.team || "",
       season: p.season || "",
       league: p.league || "",
-      image: typeof p.image === "string" && p.image.trim() ? p.image.trim() : FALLBACK_LINEUP[i]?.image || "",
+      image,
       homeFeatured: p?.homeFeatured === true,
-    }));
+    };
+    });
     const featured = normalized.filter(p => p.homeFeatured);
     const selected = featured.length
       ? [...featured, ...normalized.filter(p => !p.homeFeatured)].slice(0, 4)

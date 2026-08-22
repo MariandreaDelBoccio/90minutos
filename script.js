@@ -57,6 +57,23 @@ function normalizeSizeTokens(arr) {
     .filter(Boolean);
 }
 
+/** Lista de URLs desde `images[]` (Decap) y/o `image` legacy. */
+function normalizeProductImages(raw) {
+  const fromList = Array.isArray(raw?.images)
+    ? raw.images
+        .map((x) => (typeof x === "string" ? x : x?.src))
+        .filter((u) => typeof u === "string" && u.trim())
+        .map((u) => u.trim())
+    : [];
+  const legacy =
+    typeof raw?.image === "string" && raw.image.trim() ? [raw.image.trim()] : [];
+  const merged = [];
+  for (const u of [...legacy, ...fromList]) {
+    if (!merged.includes(u)) merged.push(u);
+  }
+  return merged;
+}
+
 function normalizeShirt(raw, index) {
   const id = raw?.id != null ? String(raw.id) : String(index + 1);
   const sizesNorm = normalizeSizeTokens(raw?.sizes);
@@ -72,6 +89,7 @@ function normalizeShirt(raw, index) {
       }))
       .filter(p => p.name)
   );
+  const images = normalizeProductImages(raw);
   return {
     id,
     club: typeof raw?.club === "string" ? raw.club : "Club",
@@ -88,7 +106,8 @@ function normalizeShirt(raw, index) {
     bg: typeof raw?.bg === "string" && raw.bg.trim()
       ? raw.bg
       : "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)",
-    image: typeof raw?.image === "string" ? raw.image : "",
+    image: images[0] || "",
+    images,
   };
 }
 
@@ -163,6 +182,22 @@ const yupooItemById = new Map();
 /** Ruta de producto en hash: #/camisa/:id */
 let productModalOpenId = null;
 let defaultDocumentTitle = "";
+let suppressProductRouteSync = false;
+
+function isYupooModalOpen() {
+  return productModalOpenId != null && String(productModalOpenId).startsWith("yupoo:");
+}
+
+function clearProductHashSilently() {
+  if (!getProductIdFromHash()) return;
+  suppressProductRouteSync = true;
+  history.replaceState(null, "", `${location.pathname}${location.search}#catalogo`);
+  suppressProductRouteSync = false;
+}
+
+function productHashForId(id) {
+  return `#/camisa/${encodeURIComponent(String(id))}`;
+}
 
 const QUALITY_BADGE_HTML = `<span class="quality-badge" title="Tejido y acabado premium de la colección 90 Minutos (no es una valoración de usuarios)"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>CALIDAD PREMIUM</span>`;
 
@@ -196,11 +231,13 @@ function getProductIdFromHash() {
 }
 
 function syncProductRoute() {
+  if (suppressProductRouteSync) return;
+  if (isYupooModalOpen()) return;
   const id = getProductIdFromHash();
   if (id && getShirt(id)) {
-    if (productModalOpenId === id) return;
+    if (String(productModalOpenId) === String(id)) return;
     openProductModal(id, { fromRoute: true });
-  } else if (productModalOpenId !== null) {
+  } else if (productModalOpenId !== null && !isYupooModalOpen()) {
     closeProductModal({ fromRoute: true });
   }
 }
@@ -1059,6 +1096,7 @@ function buildFilters() {
       yupooSelectedTeamId = null;
       resetYupooShirtFilters();
       yupooPage = 1;
+      if (productModalOpenId !== null) closeProductModal({ fromRoute: true });
       const searchEl = document.getElementById("catalog-search");
       if (searchEl) searchEl.value = "";
       buildFilters();
@@ -1159,15 +1197,19 @@ function yupooPagerHTML(page, totalPages, totalItems) {
 
 function bindYupooCards(grid) {
   grid.querySelectorAll(".card--yupoo").forEach((card) => {
-    const id = card.dataset.yupooId;
+    const openFromCard = () => {
+      const id = card.getAttribute("data-yupoo-id");
+      if (id) openYupooModal(id);
+    };
     card.querySelector(".img")?.addEventListener("click", (e) => {
       if (e.target.closest(".heart")) return;
-      openYupooModal(id);
+      openFromCard();
     });
     card.querySelector(".open-detail")?.addEventListener("click", (e) => {
       e.stopPropagation();
-      openYupooModal(id);
+      openFromCard();
     });
+    const id = card.getAttribute("data-yupoo-id");
     card.querySelector(".add-quick")?.addEventListener("click", (e) => {
       e.stopPropagation();
       addYupooToInquiry(id);
@@ -1293,6 +1335,7 @@ function bindYupooGallery(root, images, title) {
 }
 
 function openYupooModal(id) {
+  clearProductHashSilently();
   const group = getYupooItem(id);
   const modal = document.getElementById("product-modal");
   const body = document.getElementById("modal-body");
@@ -1829,12 +1872,14 @@ function bindCuratedCards(grid) {
 
     card.querySelector(".open-detail")?.addEventListener("click", (e) => {
       e.stopPropagation();
-      openProductModal(id);
+      const shirtId = card.getAttribute("data-id");
+      if (shirtId) openProductModal(shirtId);
     });
 
     card.querySelector(".img")?.addEventListener("click", (e) => {
       if (e.target.closest(".heart")) return;
-      openProductModal(id);
+      const shirtId = card.getAttribute("data-id");
+      if (shirtId) openProductModal(shirtId);
     });
   });
 }
@@ -2029,6 +2074,50 @@ function closeProductModal(opts = {}) {
   }
 }
 
+function bindProductGallery(root, images, title) {
+  const main = root.querySelector(".product-gallery-main");
+  const thumbs = root.querySelectorAll(".product-gallery-thumb");
+  if (!main || !images.length) return;
+  let index = 0;
+  const show = (i) => {
+    index = (i + images.length) % images.length;
+    main.src = encodeURI(images[index]);
+    main.alt = `${title} · foto ${index + 1}`;
+    thumbs.forEach((btn, ti) => btn.classList.toggle("active", ti === index));
+  };
+  thumbs.forEach((btn) => {
+    btn.addEventListener("click", () => show(Number(btn.dataset.index) || 0));
+  });
+  root.querySelector("[data-product-prev]")?.addEventListener("click", () => show(index - 1));
+  root.querySelector("[data-product-next]")?.addEventListener("click", () => show(index + 1));
+}
+
+function productGalleryHTML(s) {
+  const images = (s.images?.length ? s.images : s.image ? [s.image] : []);
+  if (!images.length) {
+    return `<div class="modal-visual" style="background:${s.bg}"></div>`;
+  }
+  if (images.length === 1) {
+    return `<div class="modal-visual"><img src="${encodeURI(images[0])}" alt="${escapeAttr(s.team)}" loading="lazy" /></div>`;
+  }
+  const thumbs = images.map((url, i) =>
+    `<button type="button" class="yupoo-gallery-thumb product-gallery-thumb${i === 0 ? " active" : ""}" data-index="${i}" aria-label="Foto ${i + 1}">
+      <img src="${escapeAttr(encodeURI(url))}" alt="" loading="lazy" />
+    </button>`
+  ).join("");
+  return `
+    <div class="modal-visual modal-visual--yupoo" data-product-gallery>
+      <div class="yupoo-gallery">
+        <div class="yupoo-gallery-stage">
+          <img class="yupoo-gallery-main product-gallery-main" src="${escapeAttr(encodeURI(images[0]))}" alt="${escapeAttr(s.team)}" />
+          <button type="button" class="yupoo-gallery-nav yupoo-gallery-nav--prev" data-product-prev aria-label="Foto anterior">‹</button>
+          <button type="button" class="yupoo-gallery-nav yupoo-gallery-nav--next" data-product-next aria-label="Foto siguiente">›</button>
+        </div>
+        <div class="yupoo-gallery-thumbs">${thumbs}</div>
+      </div>
+    </div>`;
+}
+
 function openProductModal(id, opts = {}) {
   const fromRoute = opts.fromRoute === true;
   const s = getShirt(id);
@@ -2057,9 +2146,7 @@ function openProductModal(id, opts = {}) {
   function renderModal() {
     const sizeBtns = buildSizeButtonsHTML(s, selected, "modal-size");
     const playerOpts = buildPlayerOptionsHTML(s, playerIdSel);
-    const modalVisual = s.image
-      ? `<div class="modal-visual"><img src="${encodeURI(s.image)}" alt="${s.team}" loading="lazy" /></div>`
-      : `<div class="modal-visual" style="background:${s.bg}"></div>`;
+    const modalVisual = productGalleryHTML(s);
     body.innerHTML = `
       ${modalVisual}
       <div class="modal-info">
@@ -2115,6 +2202,12 @@ function openProductModal(id, opts = {}) {
       toggleFavorite(id);
       renderModal();
     });
+
+    const galleryRoot = body.querySelector("[data-product-gallery]");
+    if (galleryRoot) {
+      const imgs = s.images?.length ? s.images : s.image ? [s.image] : [];
+      bindProductGallery(galleryRoot, imgs, s.team);
+    }
   }
 
   renderModal();
@@ -2125,8 +2218,12 @@ function openProductModal(id, opts = {}) {
   document.body.style.overflow = "hidden";
 
   if (!fromRoute) {
-    const next = `#/camisa/${id}`;
-    if (location.hash !== next) location.hash = next;
+    const next = productHashForId(id);
+    if (location.hash !== next) {
+      suppressProductRouteSync = true;
+      location.hash = next;
+      queueMicrotask(() => { suppressProductRouteSync = false; });
+    }
   }
 }
 
