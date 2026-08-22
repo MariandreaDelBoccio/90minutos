@@ -136,6 +136,9 @@
         }
       ],
       "club": "Liverpool",
+      "images": [
+        "/assets/productos/prueba.png"
+      ],
       "id": "4",
       "image": "assets/productos/descarga (3).jpeg",
       "team": "Liverpool Home 24/25"
