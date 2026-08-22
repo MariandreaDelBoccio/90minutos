@@ -804,7 +804,6 @@ function normalizeEditionForShirt(s, edition) {
 }
 
 function buildEditionPickHTML(s, selectedEdition, variant = "card") {
-  if (!shirtShowsEditionPick(s)) return "";
   const sel = normalizeEditionForShirt(s, selectedEdition);
   const fanExtra = variant === "modal" ? " modal-edition-fan" : "";
   const playerExtra = variant === "modal" ? " modal-edition-player" : "";
@@ -814,12 +813,22 @@ function buildEditionPickHTML(s, selectedEdition, variant = "card") {
   </div>`;
 }
 
+/** Selector Fan/Player o etiqueta fija si solo hay una version configurada. */
+function buildEditionUIHTML(s, selectedEdition, variant = "card") {
+  if (shirtShowsEditionPick(s)) {
+    return buildEditionPickHTML(s, selectedEdition, variant);
+  }
+  const ed = normalizeEditionForShirt(s, selectedEdition);
+  const label = ed === "player" ? "Player" : "Fan";
+  return `<div class="edition-pick edition-pick--solo" aria-label="Versión">
+    <span class="edition-opt edition-opt--solo active">${label}</span>
+  </div>`;
+}
+
 function buildModalEditionBlockHTML(s, selectedEdition) {
-  const pick = buildEditionPickHTML(s, selectedEdition, "modal");
-  if (!pick) return "";
   return `<div class="modal-edition">
     <span class="modal-label">Versión</span>
-    ${pick}
+    ${buildEditionUIHTML(s, selectedEdition, "modal")}
   </div>`;
 }
 
@@ -2020,7 +2029,7 @@ function cardHTML(s, i) {
   const displayPv = getEditionPrice(s, defaultEd);
   const playersOpts = buildPlayerOptionsHTML(s, "none");
   const oldBlock = s.oldPrice && defaultEd === "fan" ? `<div class="price-old js-price-old">${s.oldPrice.toFixed(2)} $</div>` : "";
-  const editionPick = buildEditionPickHTML(s, defaultEd);
+  const editionPick = buildEditionUIHTML(s, defaultEd);
   const visual = s.image
     ? `<img src="${encodeURI(s.image)}" alt="${s.team}" loading="lazy" />`
     : `<div class="bg" style="background:${s.bg}"></div>`;

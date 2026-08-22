@@ -516,6 +516,15 @@ button { font: inherit; cursor: pointer; background: none; border: 0; color: inh
   background: color-mix(in oklab, var(--primary) 14%, transparent);
   color: var(--foreground);
 }
+.edition-pick--solo { margin-top: 4px; }
+.edition-opt--solo {
+  flex: 0 0 auto;
+  display: inline-block;
+  min-width: 4.5rem;
+  text-align: center;
+  cursor: default;
+  pointer-events: none;
+}
 .player-pick {
   width: 100%;
   margin-top: 6px;
