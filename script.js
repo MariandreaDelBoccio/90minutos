@@ -75,7 +75,8 @@ function normalizeProductImages(raw) {
 }
 
 function normalizeShirt(raw, index) {
-  const id = raw?.id != null ? String(raw.id) : String(index + 1);
+  const rawId = raw?.id != null ? String(raw.id).trim() : "";
+  const id = rawId || String(index + 1);
   const sizesNorm = normalizeSizeTokens(raw?.sizes);
   const sizes = sizesNorm.length ? sizesNorm : ["M", "L", "XL"];
   const outOfStock = normalizeSizeTokens(raw?.outOfStock);
@@ -237,7 +238,14 @@ function syncProductRoute() {
   if (id && getShirt(id)) {
     if (String(productModalOpenId) === String(id)) return;
     openProductModal(id, { fromRoute: true });
-  } else if (productModalOpenId !== null && !isYupooModalOpen()) {
+    return;
+  }
+  const hash = location.hash || "";
+  const onCatalog =
+    hash === "" ||
+    hash === "#" ||
+    /^#(\/)?catalogo(?:[/?#]|$)/.test(hash);
+  if (productModalOpenId != null && !isYupooModalOpen() && onCatalog) {
     closeProductModal({ fromRoute: true });
   }
 }
@@ -1815,8 +1823,8 @@ async function renderYupooGrid() {
 
 function bindCuratedCards(grid) {
   grid.querySelectorAll(".card:not(.card--yupoo)").forEach(card => {
-    const id = card.dataset.id;
-    const shirt = getShirt(id);
+    const id = card.getAttribute("data-id");
+    const shirt = id ? getShirt(id) : null;
     if (!shirt) return;
 
     const defaultSize = firstInStockSize(shirt);
@@ -2217,12 +2225,12 @@ function openProductModal(id, opts = {}) {
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 
-  if (!fromRoute) {
+  if (!fromRoute && id) {
     const next = productHashForId(id);
     if (location.hash !== next) {
       suppressProductRouteSync = true;
       location.hash = next;
-      queueMicrotask(() => { suppressProductRouteSync = false; });
+      setTimeout(() => { suppressProductRouteSync = false; }, 0);
     }
   }
 }
