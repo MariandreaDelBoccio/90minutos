@@ -22,6 +22,7 @@
           "id": "yamal"
         }
       ],
+      "editions": "fan",
       "club": "Barcelona",
       "images": [
         "/assets/productos/whatsapp-image-2026-08-22-at-00.07.22.jpeg",
@@ -52,6 +53,7 @@
           "number": "10 "
         }
       ],
+      "editions": "both",
       "club": "Real Madrid ",
       "id": "",
       "image": "/assets/productos/frontal.jpeg",
@@ -73,8 +75,9 @@
         "L"
       ],
       "players": [],
+      "editions": "fan",
       "club": "Venezuela",
-      "id": "",
+      "id": "vzla-away-2527",
       "image": "/assets/productos/whatsapp-image-2026-08-22-at-00.14.51.jpeg",
       "team": "Venezuela Away 25/27"
     },
@@ -104,6 +107,7 @@
           "number": "17"
         }
       ],
+      "editions": "player",
       "club": "Manchester City",
       "id": "",
       "image": "/assets/productos/prueba.png",
@@ -135,6 +139,7 @@
           "number": "4"
         }
       ],
+      "editions": "both",
       "club": "Liverpool",
       "images": [
         "/assets/productos/prueba.png"
