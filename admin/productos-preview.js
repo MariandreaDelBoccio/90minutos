@@ -63,6 +63,10 @@
       var price = p.get("price");
       var pricePlayer = p.get("pricePlayer");
       var oldPrice = p.get("oldPrice");
+      var editionsRaw = p.get("editions");
+      var editions = editionsRaw != null && String(editionsRaw).trim() ? String(editionsRaw).trim().toLowerCase() : "both";
+      var showFan = editions !== "player";
+      var showPlayer = editions !== "fan";
       var imgPath = p.get("image");
       var imagesRaw = p.get("images");
       var imagesList = imagesRaw && imagesRaw.toJS ? imagesRaw.toJS() : imagesRaw;
@@ -143,17 +147,44 @@
           h("span", { className: "productos-preview__v" }, season || "—"),
         ]),
       ];
+      if (editions !== "both") {
+        metaRows.push(
+          h("div", { className: "productos-preview__row", key: "editions" }, [
+            h("span", { className: "productos-preview__k" }, "Versión"),
+            h(
+              "span",
+              { className: "productos-preview__v" },
+              editions === "fan" ? "Solo Fan" : "Solo Player"
+            ),
+          ])
+        );
+      }
 
-      var priceLines = [
-        h("div", { className: "productos-preview__price-line", key: "fan" }, [
-          h("span", { className: "productos-preview__k" }, "Fan"),
-          h("span", { className: "productos-preview__price" }, formatMoney(price)),
-        ]),
-        h("div", { className: "productos-preview__price-line", key: "player" }, [
-          h("span", { className: "productos-preview__k" }, "Player"),
-          h("span", { className: "productos-preview__price" }, formatMoney(pricePlayer)),
-        ]),
-      ];
+      var priceLines = [];
+      if (showFan) {
+        priceLines.push(
+          h("div", { className: "productos-preview__price-line", key: "fan" }, [
+            h("span", { className: "productos-preview__k" }, "Fan"),
+            h("span", { className: "productos-preview__price" }, formatMoney(price)),
+          ])
+        );
+      }
+      if (showPlayer) {
+        priceLines.push(
+          h("div", { className: "productos-preview__price-line", key: "player" }, [
+            h("span", { className: "productos-preview__k" }, "Player"),
+            h("span", { className: "productos-preview__price" }, formatMoney(pricePlayer)),
+          ])
+        );
+      }
+      if (!priceLines.length) {
+        priceLines.push(
+          h("div", { className: "productos-preview__price-line", key: "fan" }, [
+            h("span", { className: "productos-preview__k" }, "Fan"),
+            h("span", { className: "productos-preview__price" }, formatMoney(price)),
+          ])
+        );
+      }
       if (oldPrice != null && oldPrice !== "" && Number(oldPrice) > 0) {
         priceLines.unshift(
           h("div", { className: "productos-preview__old", key: "old" }, [

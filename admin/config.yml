@@ -47,6 +47,15 @@ collections:
                   - "Otra"
               - { name: "price", label: "Precio version Fan (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, hint: "Precio base que vera el cliente." }
               - { name: "pricePlayer", label: "Precio version Player (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, required: false, hint: "Si lo dejas vacio, la web calcula uno automaticamente." }
+              - name: "editions"
+                label: "Versiones en la web"
+                widget: "select"
+                default: "both"
+                options:
+                  - { label: "Fan y Player", value: "both" }
+                  - { label: "Solo Fan", value: "fan" }
+                  - { label: "Solo Player", value: "player" }
+                hint: "Elige si el cliente puede cambiar entre Fan y Player o solo ver una version."
               - { name: "oldPrice", label: "Precio anterior (USD)", widget: "number", value_type: "float", min: 0, step: 0.01, required: false, hint: "Opcional. Sirve para mostrar oferta." }
               - name: "badge"
                 label: "Etiqueta destacada"

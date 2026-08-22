@@ -109,7 +109,15 @@ function normalizeShirt(raw, index) {
       : "linear-gradient(135deg,#1f2937,#111827 60%,#4b5563)",
     image: images[0] || "",
     images,
+    editions: normalizeEditionsMode(raw?.editions),
   };
+}
+
+function normalizeEditionsMode(raw) {
+  const v = String(raw ?? "both").trim().toLowerCase();
+  if (v === "fan" || v === "solo fan") return "fan";
+  if (v === "player" || v === "solo player") return "player";
+  return "both";
 }
 
 /** Slug estable a partir de club + nombre (sin depender del orden en la lista). */
@@ -766,7 +774,53 @@ function getPlayerPrice(s) {
 }
 
 function getEditionPrice(s, edition) {
-  return edition === "player" ? getPlayerPrice(s) : getFanPrice(s);
+  const ed = normalizeEditionForShirt(s, edition);
+  return ed === "player" ? getPlayerPrice(s) : getFanPrice(s);
+}
+
+function shirtHasFan(s) {
+  return (s.editions || "both") !== "player";
+}
+
+function shirtHasPlayer(s) {
+  return (s.editions || "both") !== "fan";
+}
+
+function shirtShowsEditionPick(s) {
+  return shirtHasFan(s) && shirtHasPlayer(s);
+}
+
+function defaultEditionForShirt(s) {
+  if (shirtHasFan(s)) return "fan";
+  if (shirtHasPlayer(s)) return "player";
+  return "fan";
+}
+
+function normalizeEditionForShirt(s, edition) {
+  const ed = edition === "player" ? "player" : "fan";
+  if (ed === "player" && shirtHasPlayer(s)) return "player";
+  if (ed === "fan" && shirtHasFan(s)) return "fan";
+  return defaultEditionForShirt(s);
+}
+
+function buildEditionPickHTML(s, selectedEdition, variant = "card") {
+  if (!shirtShowsEditionPick(s)) return "";
+  const sel = normalizeEditionForShirt(s, selectedEdition);
+  const fanExtra = variant === "modal" ? " modal-edition-fan" : "";
+  const playerExtra = variant === "modal" ? " modal-edition-player" : "";
+  return `<div class="edition-pick" role="group" aria-label="Versión">
+    <button type="button" class="edition-opt${fanExtra}${sel === "fan" ? " active" : ""}" data-edition="fan">Fan</button>
+    <button type="button" class="edition-opt${playerExtra}${sel === "player" ? " active" : ""}" data-edition="player">Player</button>
+  </div>`;
+}
+
+function buildModalEditionBlockHTML(s, selectedEdition) {
+  const pick = buildEditionPickHTML(s, selectedEdition, "modal");
+  if (!pick) return "";
+  return `<div class="modal-edition">
+    <span class="modal-label">Versión</span>
+    ${pick}
+  </div>`;
 }
 
 function getPlayerOption(s, playerId) {
@@ -835,7 +889,7 @@ function refreshAllFxDisplays() {
     if (!card) return;
     const shirt = getShirt(card.dataset.id);
     if (!shirt) return;
-    const ed = card.dataset.edition === "player" ? "player" : "fan";
+    const ed = normalizeEditionForShirt(shirt, card.dataset.edition);
     el.textContent = lineBsApprox(getEditionPrice(shirt, ed));
   });
   const mbs = document.querySelector(".js-modal-price-bs");
@@ -1158,7 +1212,7 @@ function getListForGrid() {
 }
 
 function updateCardPricing(card, shirt) {
-  const ed = card.dataset.edition === "player" ? "player" : "fan";
+  const ed = normalizeEditionForShirt(shirt, card.dataset.edition);
   const pv = getEditionPrice(shirt, ed);
   const pr = card.querySelector(".js-card-price");
   if (pr) pr.textContent = `${pv.toFixed(2)} $`;
@@ -1856,13 +1910,13 @@ function bindCuratedCards(grid) {
 
     const defaultSize = firstInStockSize(shirt);
     card.dataset.size = defaultSize;
-    card.dataset.edition = "fan";
+    card.dataset.edition = defaultEditionForShirt(shirt);
     card.dataset.playerId = "none";
 
     card.querySelectorAll(".edition-opt").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        const ed = btn.dataset.edition;
+        const ed = normalizeEditionForShirt(shirt, btn.dataset.edition);
         card.dataset.edition = ed;
         card.querySelectorAll(".edition-opt").forEach(b => b.classList.toggle("active", b.dataset.edition === ed));
         updateCardPricing(card, shirt);
@@ -1900,7 +1954,7 @@ function bindCuratedCards(grid) {
       e.stopPropagation();
       let size = card.dataset.size || defaultSize;
       if (!isSizeInStock(shirt, size)) size = firstInStockSize(shirt);
-      const edition = card.dataset.edition === "player" ? "player" : "fan";
+      const edition = normalizeEditionForShirt(shirt, card.dataset.edition);
       const playerId = card.dataset.playerId || "none";
       addToInquiry(id, size, edition, playerId);
     });
@@ -1962,14 +2016,16 @@ function cardHTML(s, i) {
   const heart = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
   const ig = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>`;
   const sizes = buildSizeButtonsHTML(s, firstInStockSize(s));
-  const fanPv = getFanPrice(s);
+  const defaultEd = defaultEditionForShirt(s);
+  const displayPv = getEditionPrice(s, defaultEd);
   const playersOpts = buildPlayerOptionsHTML(s, "none");
-  const oldBlock = s.oldPrice ? `<div class="price-old js-price-old">${s.oldPrice.toFixed(2)} $</div>` : "";
+  const oldBlock = s.oldPrice && defaultEd === "fan" ? `<div class="price-old js-price-old">${s.oldPrice.toFixed(2)} $</div>` : "";
+  const editionPick = buildEditionPickHTML(s, defaultEd);
   const visual = s.image
     ? `<img src="${encodeURI(s.image)}" alt="${s.team}" loading="lazy" />`
     : `<div class="bg" style="background:${s.bg}"></div>`;
   return `
-  <article class="card" data-id="${s.id}" data-edition="fan" data-player-id="none" style="--d:${(i % 4) * 0.08}s">
+  <article class="card" data-id="${s.id}" data-edition="${defaultEd}" data-player-id="none" style="--d:${(i % 4) * 0.08}s">
     <div class="img">
       ${visual}
       <div class="water">${s.id}0</div>
@@ -1984,18 +2040,15 @@ function cardHTML(s, i) {
       <div class="league">${s.league.toUpperCase()}</div>
       <div class="team">${s.team}</div>
       <div class="card-meta muted small">${s.club} · ${s.season}</div>
-      <div class="edition-pick" role="group" aria-label="Versión">
-        <button type="button" class="edition-opt active" data-edition="fan">Fan</button>
-        <button type="button" class="edition-opt" data-edition="player">Player</button>
-      </div>
+      ${editionPick}
       <label class="visually-hidden" for="player-${s.id}">Jugador</label>
       <select id="player-${s.id}" class="player-pick">${playersOpts}</select>
       <div class="sizes sizes--pick" aria-label="Talla">${sizes}</div>
         <div class="price-row">
         <div class="price-block">
           ${oldBlock}
-          <div class="price js-card-price">${fanPv.toFixed(2)} $</div>
-          <div class="price-bs muted small js-card-price-bs">${lineBsApprox(fanPv)}</div>
+          <div class="price js-card-price">${displayPv.toFixed(2)} $</div>
+          <div class="price-bs muted small js-card-price-bs">${lineBsApprox(displayPv)}</div>
         </div>
         ${QUALITY_BADGE_HTML}
       </div>
@@ -2161,7 +2214,7 @@ function openProductModal(id, opts = {}) {
   if (!s || !modal || !body) return;
 
   let selected = firstInStockSize(s);
-  let editionSel = "fan";
+  let editionSel = defaultEditionForShirt(s);
   let playerIdSel = "none";
   const ig = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>`;
 
@@ -2190,13 +2243,7 @@ function openProductModal(id, opts = {}) {
         <p class="muted small">${s.club} · ${s.season}</p>
         ${modalPriceRow()}
         <p class="muted small modal-desc">Consulta disponibilidad y envío por Instagram. Precio orientativo.</p>
-        <div class="modal-edition">
-          <span class="modal-label">Versión</span>
-          <div class="edition-pick" role="group">
-            <button type="button" class="edition-opt modal-edition-fan${editionSel === "fan" ? " active" : ""}" data-edition="fan">Fan</button>
-            <button type="button" class="edition-opt modal-edition-player${editionSel === "player" ? " active" : ""}" data-edition="player">Player</button>
-          </div>
-        </div>
+        ${buildModalEditionBlockHTML(s, editionSel)}
         <div class="modal-player-field">
           <label class="modal-label" for="modal-player-sel">Jugador</label>
           <select id="modal-player-sel" class="player-pick">${playerOpts}</select>
@@ -2221,7 +2268,7 @@ function openProductModal(id, opts = {}) {
     });
     body.querySelectorAll(".edition-pick .edition-opt").forEach(btn => {
       btn.addEventListener("click", () => {
-        editionSel = btn.dataset.edition;
+        editionSel = normalizeEditionForShirt(s, btn.dataset.edition);
         renderModal();
       });
     });
@@ -2231,7 +2278,7 @@ function openProductModal(id, opts = {}) {
     document.getElementById("modal-add-inquiry")?.addEventListener("click", () => {
       let sz = selected;
       if (!isSizeInStock(s, sz)) sz = firstInStockSize(s);
-      addToInquiry(id, sz, editionSel, playerIdSel);
+      addToInquiry(id, sz, normalizeEditionForShirt(s, editionSel), playerIdSel);
     });
     document.getElementById("modal-toggle-fav")?.addEventListener("click", () => {
       toggleFavorite(id);
